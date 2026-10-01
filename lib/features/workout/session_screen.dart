@@ -660,6 +660,17 @@ class _SetEntryState extends State<SetEntry> {
                       return;
                     }
                     final s = old[actual];
+                    if ((timed && s['duration_seconds'] == null) ||
+                        (!timed && s['reps'] == null)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'نوع القياس تغير منذ آخر أداء؛ أدخل القيمة الحالية يدويًا.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     if (timed) {
                       duration.text = '${(s['duration_seconds'] as int) / 60}';
                     } else {

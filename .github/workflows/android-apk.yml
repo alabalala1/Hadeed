@@ -52,6 +52,7 @@ jobs:
         run: dart run tools/check_workout.dart
 
       - name: Test interfaces and capture previews
+        timeout-minutes: 5
         run: flutter test
 
       - name: Upload interface previews
