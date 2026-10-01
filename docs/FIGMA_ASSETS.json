@@ -1,0 +1,44 @@
+[
+  {
+    "node": "2:1055",
+    "path": "assets/icons/2_1055.svg",
+    "width": "18",
+    "height": "18"
+  },
+  {
+    "node": "2:1060",
+    "path": "assets/icons/2_1060.svg",
+    "width": "40",
+    "height": "40"
+  },
+  {
+    "node": "2:1068",
+    "path": "assets/icons/2_1068.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:1224",
+    "path": "assets/icons/2_1224.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:1243",
+    "path": "assets/icons/2_1243.svg",
+    "width": "24",
+    "height": "24"
+  },
+  {
+    "node": "2:1120",
+    "path": "assets/icons/2_1120.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:1265",
+    "path": "assets/icons/2_1265.svg",
+    "width": "20",
+    "height": "20"
+  }
+]

@@ -1,11 +1,16 @@
 # Hadeed
 
-This repository currently contains step 1: the Flutter Android foundation only.
-Work in small steps as requested by the user. Add feature screens, persistence,
-and Figma assets only when the next step is authorized.
+Read docs/GYM_APP_SPEC.md and docs/STEP_02.md before changes.
+Steps 1 and 2 implement the Android foundation, exercise library and editor.
+Work incrementally; every new screen must use local SQLite for its saved data.
 
-- Flutter/Dart for Android, Arabic RTL.
-- Offline app; future persistence uses local SQLite.
-- Keep domain rules independent of Flutter and storage implementation.
-- Do not claim builds or device checks without successful command results.
-- Use Flutter stable templates for Android build tooling.
+- Flutter/Dart, Android only, Arabic RTL and bundled Cairo.
+- No server, authentication, runtime asset URLs or fabricated workout history.
+- User will send the exercise list; do not seed names from Figma examples.
+- Exercise definitions and per-day plans are separate. Use stable IDs.
+- Archive definitions; preserve session snapshots in future features.
+- SQLite is authoritative. UI → ExerciseController → ExerciseRepository.
+- Resolve images relative to the app documents directory and copy picker files.
+- Include migrations for every future schema version; never silently reset a database.
+- Do not claim builds, rendered UI parity or device checks without successful results.
+- Run source analysis and tools/check_repository.dart; build Android when available.

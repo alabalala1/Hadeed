@@ -12,9 +12,31 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  flutter_svg: ^2.3.0
+  image_picker: ^1.2.3
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  provider: ^6.1.5+1
+  sqflite: ^2.4.4
+  sqflite_common: ^2.5.13
+  uuid: ^4.6.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
+  sqflite_common_ffi: ^2.4.3
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-400.ttf
+          weight: 400
+        - asset: assets/fonts/Cairo-500.ttf
+          weight: 500
+        - asset: assets/fonts/Cairo-700.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-800.ttf
+          weight: 800
