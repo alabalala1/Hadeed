@@ -6,20 +6,37 @@ import '../core/theme/app_theme.dart';
 import '../data/exercise_image_store.dart';
 import '../data/exercise_repository.dart';
 import '../data/training_repository.dart';
+import '../data/workout_repository.dart';
+import '../data/backup_repository.dart';
+import '../core/platform/android_bridge.dart';
 import 'app_shell.dart';
 import 'exercise_controller.dart';
 import 'training_controller.dart';
+import 'workout_controller.dart';
 
 class HadeedApp extends StatelessWidget {
-  const HadeedApp({super.key, required this.repository, required this.images});
+  const HadeedApp({
+    super.key,
+    required this.repository,
+    required this.images,
+    required this.backup,
+  });
   final ExerciseRepository repository;
   final ExerciseImageStore images;
+  final BackupRepository backup;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         Provider.value(value: images),
+        Provider.value(value: backup),
+        ChangeNotifierProvider(
+          create: (_) => WorkoutController(
+            WorkoutRepository(repository.database),
+            AndroidBridge(),
+          )..load(),
+        ),
         ChangeNotifierProvider(
           create: (_) =>
               TrainingController(TrainingRepository(repository.database))

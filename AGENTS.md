@@ -1,7 +1,7 @@
 # Hadeed
 
-Read docs/GYM_APP_SPEC.md and docs/STEP_03.md before changes.
-Steps 1–3 implement the Android foundation, exercise library, training days and per-day plans.
+Read docs/GYM_APP_SPEC.md and docs/STEP_04.md before changes.
+Steps 1–4 implement the offline Android application, sessions, timers, history and backup.
 Work incrementally; every new screen must use local SQLite for its saved data.
 
 - Flutter/Dart, Android only, Arabic RTL and bundled Cairo.
@@ -11,8 +11,14 @@ Work incrementally; every new screen must use local SQLite for its saved data.
 - Install the template once in a transaction; reopening must preserve user edits.
 - Exercise definitions and per-day plans are separate. Use stable IDs.
 - Archive definitions; preserve session snapshots in future features.
-- SQLite is authoritative. UI → controllers → repositories. Schema version 2 preserves version 1 data.
+- SQLite is authoritative. UI → controllers → repositories. Schema version 3 preserves earlier data.
 - Resolve images relative to the app documents directory and copy picker files.
 - Include migrations for every future schema version; never silently reset a database.
 - Do not claim builds, rendered UI parity or device checks without successful results.
-- Run source analysis and tools/check_repository.dart and tools/check_training.dart; build Android when available.
+- Run source analysis and tools/check_repository.dart and tools/check_training.dart, tools/check_workout.dart and flutter test; build Android in GitHub Actions.
+
+- Session snapshots are independent of mutable plans and definitions; do not delete referenced images.
+- One event per local date and one active session. Only confirmed completion advances the cycle, once.
+- Store weights in kg; lb is an input/display conversion. Blank weight is null, never implicit zero.
+- Validate backups in an isolated database before confirmation. Stage images before transactional replacement.
+- Native alarm payload is a mirror; SQLite deadlines and status remain authoritative.

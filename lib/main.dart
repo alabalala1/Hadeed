@@ -12,6 +12,7 @@ import 'core/theme/app_theme.dart';
 import 'data/exercise_image_store.dart';
 import 'data/exercise_repository.dart';
 import 'data/training_repository.dart';
+import 'data/backup_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,11 @@ class _BootstrapState extends State<_Bootstrap> {
     return HadeedApp(
       repository: ExerciseRepository(db),
       images: ExerciseImageStore(documents.path),
+      backup: BackupRepository(
+        db,
+        ExerciseImageStore(documents.path),
+        databaseFactory,
+      ),
     );
   }
 

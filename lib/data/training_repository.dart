@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:uuid/uuid.dart';
 
@@ -207,13 +209,26 @@ class TrainingRepository {
         'day_id': dayId,
         'exercise_id': exerciseId,
         'sort_order': order,
-        'rest_seconds': 60,
+        'rest_seconds': await _defaultRest(txn),
       });
     });
   }
 
   Future<void> unlink(String id) async {
     await database.delete('day_exercises', where: 'id=?', whereArgs: [id]);
+  }
+
+  Future<int> _defaultRest(DatabaseExecutor txn) async {
+    final settings = await txn.query(
+      'app_meta',
+      where: 'key=?',
+      whereArgs: ['settings'],
+    );
+    return settings.isEmpty
+        ? 60
+        : (jsonDecode(settings.single['value'] as String)
+                  as Map<String, dynamic>)['rest_seconds']
+              as int;
   }
 
   Future<void> reorderLinks(String dayId, List<String> ids) async {

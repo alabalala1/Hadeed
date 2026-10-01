@@ -124,7 +124,14 @@ class _ExerciseEditorScreenState extends State<ExerciseEditorScreen> {
     if (ok && old != null && (copied != null || removeImage)) {
       // Cleanup follows the successful database commit; it must never undo it.
       try {
-        await images.delete(old);
+        final references = await state.repository.database.query(
+          'session_exercises',
+          columns: ['id'],
+          where: 'image_file=?',
+          whereArgs: [old],
+          limit: 1,
+        );
+        if (references.isEmpty) await images.delete(old);
       } catch (_) {
         /* Orphan cleanup can retry later. */
       }

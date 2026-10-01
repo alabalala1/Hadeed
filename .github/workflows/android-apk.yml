@@ -48,6 +48,20 @@ jobs:
       - name: Check migration and training plans
         run: dart run tools/check_training.dart
 
+      - name: Check sessions, timers and backups
+        run: dart run tools/check_workout.dart
+
+      - name: Test interfaces and capture previews
+        run: flutter test
+
+      - name: Upload interface previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hadeed-interface-previews
+          path: build/ui-previews/*.png
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Build release APKs for each architecture
         run: flutter build apk --release --split-per-abi --build-number="$GITHUB_RUN_NUMBER"
 

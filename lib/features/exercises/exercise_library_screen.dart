@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/design_widgets.dart';
 import '../../data/exercise_image_store.dart';
 import '../../domain/exercise.dart';
+import '../schedule/plan_editor_screen.dart';
 import 'exercise_editor_screen.dart';
 
 class ExerciseLibraryScreen extends StatefulWidget {
@@ -249,6 +250,13 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                                             ],
                                           ),
                                         ),
+                                        if (!e.archived)
+                                          TextButton(
+                                            onPressed: training.busy
+                                                ? null
+                                                : () => linkToDay(e),
+                                            child: const Text('ربط'),
+                                          ),
                                         // Figma's chevron layer is empty; preserve its 18px slot.
                                         const SizedBox(width: 18),
                                       ],
@@ -275,6 +283,43 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> linkToDay(Exercise exercise) async {
+    final t = context.read<TrainingController>();
+    final day = await showDialog<String>(
+      context: context,
+      builder: (c) => SimpleDialog(
+        title: const Text('ربط التمرين بيوم'),
+        children: [
+          if (t.days.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('أضف يومًا من الجدول أولًا.'),
+            ),
+          for (final d in t.days)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(c, d.id),
+              child: Text(d.name),
+            ),
+        ],
+      ),
+    );
+    if (day == null || !mounted) return;
+    final id = t.repository.newId();
+    final ok = await t.change(() => t.repository.link(day, exercise.id, id));
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(t.error ?? 'تعذر الربط')));
+      return;
+    }
+    final link = t.entries[day]!.firstWhere((e) => e.id == id);
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(builder: (_) => PlanEditorScreen(link: link)),
     );
   }
 }

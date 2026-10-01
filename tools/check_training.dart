@@ -52,7 +52,7 @@ Future<void> main() async {
   try {
     var repository = TrainingRepository(db);
     var exercises = ExerciseRepository(db);
-    check(await db.getVersion() == 2, 'Upgrade to v2');
+    check(await db.getVersion() == AppDatabase.schemaVersion, 'Upgrade to v2');
     check(
       (await exercises.find('legacy_bench'))!.notes == 'ملاحظات المستخدم',
       'Upgrade preserves notes',
