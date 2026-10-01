@@ -13,9 +13,16 @@ class DesignIcon extends StatelessWidget {
 }
 
 class ScreenHeader extends StatelessWidget {
-  const ScreenHeader(this.title, this.subtitle, {super.key, this.back = false});
+  const ScreenHeader(
+    this.title,
+    this.subtitle, {
+    super.key,
+    this.back = false,
+    this.backNode = '2:1224',
+  });
   final String title, subtitle;
   final bool back;
+  final String backNode;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -32,7 +39,7 @@ class ScreenHeader extends StatelessWidget {
               ),
             ),
             onPressed: () => Navigator.maybePop(context),
-            icon: const DesignIcon('2:1224'),
+            icon: DesignIcon(backNode),
           ),
           const SizedBox(width: 12),
         ],

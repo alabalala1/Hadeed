@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../app/exercise_controller.dart';
+import '../../app/training_controller.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/design_widgets.dart';
 import '../../data/exercise_image_store.dart';
@@ -20,8 +21,22 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
   String query = '';
   bool archived = false;
 
+  String usage(TrainingController training, Exercise exercise) {
+    final names = training.days
+        .where(
+          (day) => (training.entries[day.id] ?? []).any(
+            (link) => link.exercise.id == exercise.id,
+          ),
+        )
+        .map((d) => d.name)
+        .toList();
+    return names.isEmpty
+        ? 'المجموعة: غير مستخدم حاليًا'
+        : 'المجموعة: ${names.join('، ')}';
+  }
+
   Future<void> edit([Exercise? exercise]) async {
-    await Navigator.push<void>(
+    await Navigator.push<String>(
       context,
       MaterialPageRoute(
         builder: (_) => ExerciseEditorScreen(exercise: exercise),
@@ -32,6 +47,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<ExerciseController>();
+    final training = context.watch<TrainingController>();
     final available = state.exercises
         .where((e) => e.archived == archived)
         .toList();
@@ -224,10 +240,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
-                                                e.measurementType ==
-                                                        MeasurementType.reps
-                                                    ? 'تكرارات ووزن'
-                                                    : 'مدة زمنية / كارديو',
+                                                usage(training, e),
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color: AppColors.muted,

@@ -132,7 +132,7 @@ class _ExerciseEditorScreenState extends State<ExerciseEditorScreen> {
     if (!mounted) return;
     setState(() => saving = false);
     if (ok) {
-      Navigator.pop(context);
+      Navigator.pop(context, id);
     } else {
       message(state.error ?? 'تعذر الحفظ');
     }
@@ -146,7 +146,7 @@ class _ExerciseEditorScreenState extends State<ExerciseEditorScreen> {
       archived ? 'استعادة التمرين' : 'أرشفة التمرين',
       archived
           ? 'إعادة التمرين إلى المكتبة النشطة؟'
-          : 'سيختفي من المكتبة النشطة وتبقى بياناته محفوظة.',
+          : 'سيختفي من المكتبة وخطط الأيام النشطة حتى استعادته، وتبقى بياناته محفوظة.',
     )) {
       return;
     }

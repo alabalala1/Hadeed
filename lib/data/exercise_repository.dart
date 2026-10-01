@@ -36,6 +36,21 @@ class ExerciseRepository {
       if (rows.isEmpty) {
         await txn.insert('exercises', exercise.toRow());
       } else {
+        final previous = await txn.query(
+          'exercises',
+          where: 'id=?',
+          whereArgs: [exercise.id],
+        );
+        if (previous.single['measurement_type'] !=
+            exercise.measurementType.name) {
+          final plans = await txn.rawQuery(
+            'SELECT p.id FROM planned_sets p JOIN day_exercises l ON l.id=p.day_exercise_id WHERE l.exercise_id=? LIMIT 1',
+            [exercise.id],
+          );
+          if (plans.isNotEmpty) {
+            throw StateError('أزل أهداف خطط هذا التمرين قبل تغيير نوع القياس');
+          }
+        }
         await txn.update(
           'exercises',
           exercise.toRow(),

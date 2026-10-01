@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
 import '../data/exercise_image_store.dart';
 import '../data/exercise_repository.dart';
-import '../features/exercises/exercise_library_screen.dart';
+import '../data/training_repository.dart';
+import 'app_shell.dart';
 import 'exercise_controller.dart';
+import 'training_controller.dart';
 
 class HadeedApp extends StatelessWidget {
   const HadeedApp({super.key, required this.repository, required this.images});
@@ -19,7 +21,15 @@ class HadeedApp extends StatelessWidget {
       providers: [
         Provider.value(value: images),
         ChangeNotifierProvider(
-          create: (_) => ExerciseController(repository)..load(),
+          create: (_) =>
+              TrainingController(TrainingRepository(repository.database))
+                ..load(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ExerciseController(
+            repository,
+            onChanged: context.read<TrainingController>().load,
+          )..load(),
         ),
       ],
       child: MaterialApp(
@@ -29,7 +39,7 @@ class HadeedApp extends StatelessWidget {
         supportedLocales: const [Locale('ar')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         theme: appTheme(),
-        home: const ExerciseLibraryScreen(),
+        home: const AppShell(),
       ),
     );
   }

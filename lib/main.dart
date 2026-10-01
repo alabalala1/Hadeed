@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -8,6 +11,7 @@ import 'core/database/app_database.dart';
 import 'core/theme/app_theme.dart';
 import 'data/exercise_image_store.dart';
 import 'data/exercise_repository.dart';
+import 'data/training_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +38,19 @@ class _BootstrapState extends State<_Bootstrap> {
       databaseFactory,
       p.join(await getDatabasesPath(), 'hadeed.db'),
     );
+    try {
+      final program =
+          jsonDecode(
+                await rootBundle.loadString(
+                  'assets/templates/user_program_v1.json',
+                ),
+              )
+              as Map<String, dynamic>;
+      await TrainingRepository(db).installTemplate(program);
+    } catch (_) {
+      await db.close();
+      rethrow;
+    }
     return HadeedApp(
       repository: ExerciseRepository(db),
       images: ExerciseImageStore(documents.path),

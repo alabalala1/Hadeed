@@ -4,8 +4,9 @@ import '../data/exercise_repository.dart';
 import '../domain/exercise.dart';
 
 class ExerciseController extends ChangeNotifier {
-  ExerciseController(this.repository);
+  ExerciseController(this.repository, {this.onChanged});
   final ExerciseRepository repository;
+  final Future<void> Function()? onChanged;
   List<Exercise> exercises = const [];
   bool busy = false;
   bool loading = true;
@@ -35,12 +36,15 @@ class ExerciseController extends ChangeNotifier {
       // Reload from SQLite, not a speculative in-memory edit.
       exercises = await repository.list(includeArchived: true);
       return true;
-    } catch (_) {
-      error = 'تعذر حفظ التغيير. بياناتك السابقة محفوظة؛ حاول مجددًا.';
+    } catch (e) {
+      error = e is StateError
+          ? e.message.toString()
+          : 'تعذر حفظ التغيير. بياناتك السابقة محفوظة؛ حاول مجددًا.';
       return false;
     } finally {
       busy = false;
       notifyListeners();
+      await onChanged?.call();
     }
   }
 }

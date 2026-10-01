@@ -40,5 +40,59 @@
     "path": "assets/icons/2_1265.svg",
     "width": "20",
     "height": "20"
+  },
+  {
+    "node": "2:1031",
+    "path": "assets/icons/2_1031.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:1078",
+    "path": "assets/icons/2_1078.svg",
+    "width": "24",
+    "height": "24"
+  },
+  {
+    "node": "2:1082",
+    "path": "assets/icons/2_1082.svg",
+    "width": "24",
+    "height": "24"
+  },
+  {
+    "node": "2:890",
+    "path": "assets/icons/2_890.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:900",
+    "path": "assets/icons/2_900.svg",
+    "width": "24",
+    "height": "24"
+  },
+  {
+    "node": "2:904",
+    "path": "assets/icons/2_904.svg",
+    "width": "24",
+    "height": "24"
+  },
+  {
+    "node": "2:965",
+    "path": "assets/icons/2_965.svg",
+    "width": "20",
+    "height": "20"
+  },
+  {
+    "node": "2:970",
+    "path": "assets/icons/2_970.svg",
+    "width": "16",
+    "height": "16"
+  },
+  {
+    "node": "2:983",
+    "path": "assets/icons/2_983.svg",
+    "width": "18",
+    "height": "18"
   }
 ]
