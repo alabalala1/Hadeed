@@ -143,6 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const Text(
                               'الأوزان محفوظة بالكيلوجرام؛ تغيير الوحدة يغير العرض والإدخال فقط.',
                             ),
+                            const SizedBox(height: 16),
                             TextFormField(
                               controller: rest,
                               enabled: !busy,
@@ -159,6 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 labelText: 'الراحة الافتراضية (ثانية)',
                               ),
                             ),
+                            const SizedBox(height: 8),
                             const Text(
                               'تُطبق على الروابط الجديدة؛ الراحة الخاصة بكل خطة تبقى كما ضبطتها.',
                             ),

@@ -597,6 +597,7 @@ class _SetEntryState extends State<SetEntry> {
         ),
         if (draftError != null)
           Text(draftError!, style: const TextStyle(color: AppColors.danger)),
+        const SizedBox(height: 12),
         if (timed)
           TextFormField(
             controller: duration,

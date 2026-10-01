@@ -54,7 +54,7 @@ class TodayScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
-                icon: const Text('⋮', style: TextStyle(fontSize: 28)),
+                icon: const Icon(Icons.more_vert),
               ),
             ],
           ),

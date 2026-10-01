@@ -91,6 +91,7 @@ void main() {
         }
 
         await settle();
+        await settle();
         expect(find.text('الحصة التدريبية اليوم'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.runAsync(() => capture('today'));
