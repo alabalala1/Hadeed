@@ -56,11 +56,12 @@ jobs:
         run: flutter test
 
       - name: Upload interface previews
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Hadeed-interface-previews
           path: build/ui-previews/*.png
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Build release APKs for each architecture

@@ -95,6 +95,11 @@ void main() {
         await tester.ensureVisible(start);
         await tester.tap(start);
         await settle();
+        await settle();
+        debugPrint(
+          'Visible session texts: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}',
+        );
+        await tester.runAsync(() => capture('session-open'));
         expect(find.text('الجولة القادمة'), findsOneWidget);
         final weight = find.widgetWithText(
           TextFormField,
