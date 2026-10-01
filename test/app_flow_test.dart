@@ -96,11 +96,12 @@ void main() {
         await tester.tap(start);
         await settle();
         await settle();
-        debugPrint(
-          'Visible session texts: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}',
-        );
         await tester.runAsync(() => capture('session-open'));
         expect(find.text('الجولة القادمة'), findsOneWidget);
+        final state = Provider.of<WorkoutController>(
+          tester.element(find.text('الجولة القادمة')),
+          listen: false,
+        );
         final weight = find.widgetWithText(
           TextFormField,
           'الوزن (كجم) — اختياري',
@@ -111,10 +112,15 @@ void main() {
         await tester.ensureVisible(reps);
         await tester.enterText(reps, '١٠');
         await settle();
+        tester.testTextInput.hide();
+        await tester.pump();
         final heading = find.text('1. بنش صدر مستوي');
         await tester.ensureVisible(heading);
+        await tester.pump();
         await tester.tap(heading);
         await tester.pump(const Duration(milliseconds: 400));
+        await tester.ensureVisible(heading);
+        await tester.pump();
         await tester.tap(heading);
         await settle();
         expect(tester.widget<TextFormField>(weight).controller!.text, '٧٫٥');
@@ -125,10 +131,6 @@ void main() {
         await tester.ensureVisible(save);
         await tester.tap(save);
         await settle();
-        final state = Provider.of<WorkoutController>(
-          tester.element(find.text('الجولة القادمة')),
-          listen: false,
-        );
         expect(state.active!.setCount, 1);
         expect(
           state.active!.sets.values.expand((s) => s).single['weight'],
