@@ -36,6 +36,9 @@ void main() {
           font.addFont(rootBundle.load('assets/fonts/Cairo-$weight.ttf'));
         }
         await font.load();
+        final icons = FontLoader('MaterialIcons');
+        icons.addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'));
+        await icons.load();
         sqfliteFfiInit();
         final temp = await Directory.systemTemp.createTemp('hadeed_ui_');
         final factory = databaseFactoryFfiNoIsolate;
@@ -145,7 +148,8 @@ void main() {
             () => repository.finish(state.active!.id, allowPartial: true),
           ),
         );
-        await tester.pageBack();
+        await tester.tap(find.byTooltip('رجوع'));
+        await settle();
         await settle();
         await tester.tap(find.text('السجل').last);
         await settle();
@@ -155,6 +159,7 @@ void main() {
         await tester.tap(find.text('اليوم').last);
         await settle();
         await tester.tap(find.byTooltip('الإعدادات'));
+        await settle();
         await settle();
         expect(find.text('تفضيلات التمرين'), findsOneWidget);
         await tester.runAsync(() => capture('settings'));
