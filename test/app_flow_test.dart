@@ -30,25 +30,33 @@ void main() {
         const MethodChannel('ye.hadeed/local'),
         (call) async => call.method == 'notificationPermission' ? false : null,
       );
-      final font = FontLoader('Cairo');
-      for (final weight in [400, 500, 700, 800]) {
-        font.addFont(rootBundle.load('assets/fonts/Cairo-$weight.ttf'));
-      }
-      await font.load();
-      sqfliteFfiInit();
-      final temp = await Directory.systemTemp.createTemp('hadeed_ui_');
+      final setup = (await tester.runAsync(() async {
+        final font = FontLoader('Cairo');
+        for (final weight in [400, 500, 700, 800]) {
+          font.addFont(rootBundle.load('assets/fonts/Cairo-$weight.ttf'));
+        }
+        await font.load();
+        sqfliteFfiInit();
+        final temp = await Directory.systemTemp.createTemp('hadeed_ui_');
+        final factory = databaseFactoryFfiNoIsolate;
+        final db = await AppDatabase.open(factory, '${temp.path}/db');
+        return (temp, db);
+      }))!;
+      final temp = setup.$1;
+      final db = setup.$2;
       final factory = databaseFactoryFfiNoIsolate;
-      final db = await AppDatabase.open(factory, '${temp.path}/db');
       final repository = WorkoutRepository(db);
-      final program =
-          jsonDecode(
-                await File(
-                  'assets/templates/user_program_v1.json',
-                ).readAsString(),
-              )
-              as Map<String, dynamic>;
-      await TrainingRepository(db).installTemplate(program);
-      await repository.onboarding(useTemplate: true);
+      await tester.runAsync(() async {
+        final program =
+            jsonDecode(
+                  await File(
+                    'assets/templates/user_program_v1.json',
+                  ).readAsString(),
+                )
+                as Map<String, dynamic>;
+        await TrainingRepository(db).installTemplate(program);
+        await repository.onboarding(useTemplate: true);
+      });
       final images = ExerciseImageStore('${temp.path}/documents');
       final boundary = GlobalKey();
       final app = HadeedApp(
@@ -66,7 +74,6 @@ void main() {
         }
 
         Future<void> capture(String name) async {
-          await tester.pump();
           final render =
               boundary.currentContext!.findRenderObject()!
                   as RenderRepaintBoundary;
@@ -146,9 +153,12 @@ void main() {
         await tester.pumpWidget(const SizedBox());
         await tester.pump();
       } finally {
-        await db.close();
-        await temp.delete(recursive: true);
+        await tester.runAsync(() async {
+          await db.close();
+          await temp.delete(recursive: true);
+        });
       }
     },
+    timeout: const Timeout(Duration(minutes: 2)),
   );
 }
