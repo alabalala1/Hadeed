@@ -105,6 +105,15 @@ void main() {
         await tester.enterText(weight, '٧٫٥');
         await tester.ensureVisible(reps);
         await tester.enterText(reps, '١٠');
+        await settle();
+        final heading = find.text('1. بنش صدر مستوي');
+        await tester.ensureVisible(heading);
+        await tester.tap(heading);
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(heading);
+        await settle();
+        expect(tester.widget<TextFormField>(weight).controller!.text, '٧٫٥');
+        expect(tester.widget<TextFormField>(reps).controller!.text, '١٠');
         tester.testTextInput.hide();
         await tester.pump();
         final save = find.text('حفظ الجولة');

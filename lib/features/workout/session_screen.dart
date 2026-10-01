@@ -125,7 +125,8 @@ class _SessionScreenState extends State<SessionScreen> {
                       highlight: s.active,
                       child: ExpansionTile(
                         key: PageStorageKey(e['id']),
-                        initiallyExpanded: !s.active || e == s.exercises.first,
+                        initiallyExpanded:
+                            !s.active || e['id'] == s.exercises.first['id'],
                         tilePadding: EdgeInsets.zero,
                         childrenPadding: EdgeInsets.zero,
                         title: Text(
@@ -508,9 +509,11 @@ class _SetEntryState extends State<SetEntry> {
       'duration': duration.text,
       'notes': notes.text,
     };
+    final row = widget.exercise;
     writes = writes
         .then((_) => repo.draft(widget.exercise['id'] as String, value))
         .then((_) {
+          row['draft_json'] = jsonEncode(value);
           draftError = null;
         })
         .catchError((Object _) {

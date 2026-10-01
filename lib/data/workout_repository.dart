@@ -92,7 +92,11 @@ class WorkoutRepository {
         orderBy: 'sort_order, saved_at, id',
       );
     }
-    return SessionRecord(r.single, ex, sets);
+    return SessionRecord(
+      r.single,
+      ex.map((e) => Map<String, Object?>.from(e)).toList(),
+      sets,
+    );
   }
 
   Future<String> start() async {
