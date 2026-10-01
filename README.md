@@ -34,3 +34,22 @@ flutter run
 نجح تحليل مصدر Dart واختبارات SQLite المحلية: 14 للمكتبة و54 للجدول والخطط.
 بناء APK وفحص الواجهات على جهاز لم يُنفّذا بعد.
 التفاصيل في `docs/STEP_03.md` والدليل في `docs/GYM_APP_SPEC.md`.
+
+## تحميل APK من GitHub Actions
+
+يعمل workflow `Build Android APKs` عند كل تحديث لفرع main، أو يدويًا من
+Actions → Build Android APKs → Run workflow. يجري تحليل Flutter وفحوص SQLite
+ثم يبني Release باستخدام `--split-per-abi`.
+
+بعد نجاح البناء افتح صفحة التشغيل وانزل إلى Artifacts، ثم حمّل الملف المناسب وفك الضغط:
+
+| الملف | المعمارية |
+| --- | --- |
+| Hadeed-arm64-v8a | ARM 64-bit |
+| Hadeed-armeabi-v7a | ARM 32-bit |
+| Hadeed-x86_64 | x86 64-bit، ومنها محاكيات Android |
+
+الملفات تبقى 30 يومًا. يعرض ملخص التشغيل حجم كل APK، ورقم البناء يتزايد مع التشغيل.
+التوقيع الحالي للتطوير، ويُنشأ على runner؛ قد يلزم حذف النسخة السابقة إذا تغير المفتاح.
+قبل الاستخدام المستمر أو النشر يجب إعداد مفتاح توقيع ثابت محفوظ في GitHub Secrets.
+إضافة workflow وحدها لا تعني نجاح بناء APK؛ نتيجة التشغيل في Actions هي المرجع.
