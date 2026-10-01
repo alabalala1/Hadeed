@@ -15,19 +15,23 @@ class WorkoutCard extends StatelessWidget {
   final bool highlight;
   final Color? tint;
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Material(
       color: tint ?? Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: highlight ? AppColors.primary : AppColors.border,
-        width: highlight ? 1.5 : 1,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: highlight ? AppColors.primary : AppColors.border,
+          width: highlight ? 1.5 : 1,
+        ),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
-    child: child,
   );
 }
 

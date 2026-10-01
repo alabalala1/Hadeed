@@ -8,6 +8,7 @@ import '../../domain/workout.dart';
 import 'session_screen.dart';
 import 'settings_screen.dart';
 import 'workout_widgets.dart';
+import '../schedule/day_detail_screen.dart';
 
 class TodayScreen extends StatelessWidget {
   const TodayScreen({super.key});
@@ -103,11 +104,27 @@ class TodayScreen extends StatelessWidget {
                         '${links.length} تمارين · ${last == null ? 'لا يوجد أداء سابق' : 'آخر مرة: ${last['date_local']}'}',
                       ),
                       const Divider(height: 32),
-                      for (var i = 0; i < links.length; i++)
+                      for (
+                        var i = 0;
+                        i < (links.length < 3 ? links.length : 3);
+                        i++
+                      )
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: Text(
                             '${i + 1}. ${links[i].exercise.name}\n${links[i].summary}',
+                          ),
+                        ),
+                      if (links.length > 3)
+                        TextButton(
+                          onPressed: () => Navigator.push<void>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DayDetailScreen(dayId: day!.id),
+                            ),
+                          ),
+                          child: Text(
+                            '+ ${links.length - 3} تمارين أخرى — تفاصيل اليوم',
                           ),
                         ),
                       if (links.isEmpty)
