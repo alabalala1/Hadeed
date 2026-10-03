@@ -35,7 +35,9 @@ flutter run
 `ye.hadeed.hadeed` والتوقيع الحالي للتطوير فقط.
 
 نجح تحليل Dart و139 فحص SQLite: 14 للمكتبة و54 للخطط و71 للجلسات والمؤقت والنسخ الاحتياطي.
-بناء خطوة الجدول السابقة نجح على GitHub. تشغيل البناء واختبار الواجهات لهذه الخطوة يُتابع في Actions.
+نجح أيضًا اختبار Flutter للواجهات وبناء APK للمعماريات الثلاث في
+[التشغيل المختبر](https://github.com/alabalala1/Hadeed/actions/runs/36848478179)،
+من كود الإصدار `5defc024`. راجعت لقطات اليوم والجلسة والسجل والإعدادات، ومنها شاشة صغيرة مع تكبير النص.
 اختبار إشعارات الخلفية وقفل الشاشة والاستعادة على هاتف فعلي ما زال مطلوبًا.
 التفاصيل في `docs/STEP_04.md` والدليل في `docs/GYM_APP_SPEC.md`.
 
@@ -47,11 +49,11 @@ Actions → Build Android APKs → Run workflow. يجري تحليل Flutter و�
 
 بعد نجاح البناء افتح صفحة التشغيل وانزل إلى Artifacts، ثم حمّل الملف المناسب وفك الضغط:
 
-| الملف | المعمارية |
-| --- | --- |
-| Hadeed-arm64-v8a | ARM 64-bit |
-| Hadeed-armeabi-v7a | ARM 32-bit |
-| Hadeed-x86_64 | x86 64-bit، ومنها محاكيات Android |
+| الملف | المعمارية | حجم APK المختبر |
+| --- | --- | --- |
+| [Hadeed-arm64-v8a](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11155025679) | ARM 64-bit | 19.8 MB |
+| [Hadeed-armeabi-v7a](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11154637861) | ARM 32-bit | 17.4 MB |
+| [Hadeed-x86_64](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11154961586) | x86 64-bit، ومنها محاكيات Android | 21.3 MB |
 
 الملفات تبقى 30 يومًا. يعرض ملخص التشغيل حجم كل APK، ورقم البناء يتزايد مع التشغيل.
 التوقيع الحالي للتطوير، ويُنشأ على runner؛ قد يلزم حذف النسخة السابقة إذا تغير المفتاح.
