@@ -101,9 +101,9 @@ void main() {
         await settle();
         await settle();
         await tester.runAsync(() => capture('session-open'));
-        expect(find.text('الجولة القادمة'), findsOneWidget);
+        expect(find.byKey(const ValueKey('next-set-heading')), findsOneWidget);
         final state = Provider.of<WorkoutController>(
-          tester.element(find.text('الجولة القادمة')),
+          tester.element(find.byKey(const ValueKey('next-set-heading'))),
           listen: false,
         );
         final weight = find.byKey(const ValueKey('weight-input'));
@@ -128,7 +128,7 @@ void main() {
         expect(tester.widget<TextFormField>(reps).controller!.text, '١٠');
         tester.testTextInput.hide();
         await tester.pump();
-        final save = find.text('حفظ الجولة');
+        final save = find.byKey(const ValueKey('save-set'));
         await tester.ensureVisible(save);
         await tester.tap(save);
         await settle();

@@ -12,6 +12,39 @@ class WorkoutRepository {
   final Database db;
   final DateTime Function() now;
   String newId() => const Uuid().v4();
+  Future<Map<String, dynamic>> exerciseClock(String sessionId) async {
+    final rows = await db.query('app_meta', where: 'key=?', whereArgs: ['exercise_clock:$sessionId']);
+    return rows.isEmpty ? <String, dynamic>{'elapsed': <String, dynamic>{}} : jsonDecode(rows.single['value'] as String) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> selectExercise(String sessionId, String? exerciseId) => db.transaction((t) async {
+    final session = await t.query('workout_sessions', where: 'id=?', whereArgs: [sessionId]);
+    if (session.isEmpty) throw StateError('الجلسة غير موجودة');
+    if (exerciseId != null) {
+      final exercise = await t.query('session_exercises', where: 'id=? AND session_id=?', whereArgs: [exerciseId, sessionId]);
+      if (exercise.isEmpty) throw StateError('التمرين غير موجود');
+    }
+    final clock = await _switchExerciseClock(t, sessionId, session.single['status'] == 'active' ? exerciseId : null);
+    return clock;
+  });
+
+  Future<Map<String, dynamic>> _switchExerciseClock(DatabaseExecutor t, String sessionId, String? exerciseId) async {
+    final key = 'exercise_clock:$sessionId';
+    final rows = await t.query('app_meta', where: 'key=?', whereArgs: [key]);
+    final clock = rows.isEmpty ? <String, dynamic>{'elapsed': <String, dynamic>{}} : jsonDecode(rows.single['value'] as String) as Map<String, dynamic>;
+    if (clock['current'] == exerciseId) return clock;
+    final time = now().millisecondsSinceEpoch;
+    final elapsed = clock['elapsed'] as Map<String, dynamic>;
+    final current = clock['current'] as String?;
+    final started = clock['started'] as int?;
+    if (current != null && started != null) {
+      elapsed[current] = ((elapsed[current] as num?) ?? 0) + (time > started ? time - started : 0);
+    }
+    clock['current'] = exerciseId;
+    clock['started'] = exerciseId == null ? null : time;
+    await t.insert('app_meta', {'key': key, 'value': jsonEncode(clock)}, conflictAlgorithm: ConflictAlgorithm.replace);
+    return clock;
+  }
   Future<bool> needsOnboarding() async {
     final r = await db.query(
       'app_meta',
@@ -344,6 +377,7 @@ class WorkoutRepository {
       whereArgs: [id],
     );
     await t.delete('timer_state', where: 'session_id=?', whereArgs: [id]);
+    await _switchExerciseClock(t, id, null);
     if (!abandon) {
       final current = (await t.query('cycle_state')).single['current_day_id'];
       if (current == s['day_id']) {

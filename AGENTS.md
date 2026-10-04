@@ -23,5 +23,5 @@ Work incrementally; every new screen must use local SQLite for its saved data.
 - Validate backups in an isolated database before confirmation. Stage images before transactional replacement.
 - Native alarm payload is a mirror; SQLite deadlines and status remain authoritative.
 
-- Latest visual direction: navy/electric blue/orange per STEP_05; keep forms width-bounded and session completion pinned outside scrolling.
+- Latest session design: Figma 30:711, dark green/lime per STEP_06. Other screens retain navy/electric blue/orange per STEP_05; keep forms width-bounded and session completion pinned outside scrolling.
 - Regression tests must open later exercise cards, not just the initially expanded first card.

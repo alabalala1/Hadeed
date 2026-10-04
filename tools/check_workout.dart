@@ -102,6 +102,14 @@ Future<void> main() async {
     var s = (await w.active())!;
     final e = s.exercises.single;
     final eid = e['id'] as String;
+    final clockStart = now;
+    await w.selectExercise(id, eid);
+    now = now.add(const Duration(seconds: 30));
+    check((await w.selectExercise(id, eid))['started'] == clockStart.millisecondsSinceEpoch, 'reselect does not reset exercise clock');
+    await w.selectExercise(id, null);
+    check(((await w.exerciseClock(id))['elapsed'] as Map)[eid] == 30000, 'exercise clock accrues on collapse');
+    now = now.add(const Duration(seconds: 15));
+    await w.selectExercise(id, eid);
     await reject(() => w.finish(id), 'empty completion rejected');
     await reject(() => w.rest(now, ''), 'active session blocks rest');
     await reject(w.resetCycle, 'active session blocks reset');
@@ -221,12 +229,16 @@ Future<void> main() async {
     ex = ExerciseRepository(db);
     check((await w.active())!.id == id, 'resume after reopen');
     check((await w.active())!.setCount == 2, 'performance survives reopen');
+    check((await w.exerciseClock(id))['current'] == eid, 'exercise selection survives database reopen');
     check(
       (await w.active())!.elapsed(now) >= 3600,
       'session duration includes pause',
     );
     await w.finish(id, allowPartial: true);
+    check((await w.exerciseClock(id))['current'] == null, 'completion stops exercise clock');
+    final finishedClock = jsonEncode(await w.exerciseClock(id));
     await w.finish(id, allowPartial: true);
+    check(jsonEncode(await w.exerciseClock(id)) == finishedClock, 'repeated finish preserves elapsed exercise time');
     check(await t.currentDay() == 'b', 'completion moves once');
     check(await w.timer() == null, 'completion clears timer');
     await reject(() => w.start(), 'one event per date');
@@ -375,6 +387,7 @@ Future<void> main() async {
       'image bytes restored',
     );
     check((await w.settings()).unit == 'lb', 'settings restored');
+    check(jsonEncode(await w.exerciseClock(id)) == finishedClock, 'exercise times survive backup restore');
     check((await w.history()).length == 7, 'all calendar history restored');
     check(normalizeNumber('٧٫٥') == '7.5', 'Arabic decimal supported');
     check(

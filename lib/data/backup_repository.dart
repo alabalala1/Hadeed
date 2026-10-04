@@ -214,6 +214,18 @@ class BackupRepository {
         where: 'key=?',
         whereArgs: ['settings'],
       );
+      for (final meta in data['app_meta']!.where((r) => (r['key'] as String).startsWith('exercise_clock:'))) {
+        final sessionId = (meta['key'] as String).substring('exercise_clock:'.length);
+        final session = data['workout_sessions']!.where((r) => r['id'] == sessionId).toList();
+        final clock = jsonDecode(meta['value'] as String) as Map<String, dynamic>;
+        final elapsed = clock['elapsed'] as Map<String, dynamic>;
+        final ids = data['session_exercises']!.where((e) => e['session_id'] == sessionId).map((e) => e['id']).toSet();
+        if (session.length != 1 || elapsed.entries.any((e) => !ids.contains(e.key) || e.value is! int || (e.value as int) < 0) ||
+            (clock['current'] != null && (!ids.contains(clock['current']) || session.single['status'] != 'active' || clock['started'] is! int)) ||
+            (clock['current'] == null && clock['started'] != null)) {
+          throw const FormatException('وقت تمرين غير صالح');
+        }
+      }
       if (settings.isNotEmpty) {
         WorkoutSettings.fromJson(
           jsonDecode(settings.single['value'] as String)
