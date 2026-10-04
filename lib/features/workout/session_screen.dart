@@ -110,8 +110,10 @@ class _SessionScreenState extends State<SessionScreen> {
               IconButton(tooltip: 'رجوع', onPressed: () => Navigator.pop(context), icon: const DesignIcon('30:725')),
               const SizedBox(width: 8),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.row['day_name'] as String, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _sessionInk)),
-                Text(s.active ? 'تمرينك الآن • واصل بقوة' : 'سجل التمرين • ${s.row['date_local']}', style: const TextStyle(fontSize: 11, color: _sessionMuted)),
+                Tooltip(message: s.row['day_name'] as String,
+                  child: Text(s.row['day_name'] as String, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _sessionInk))),
+                Text(s.active ? 'تمرينك الآن • ${clockText(s.elapsed(DateTime.now()))}' : 'سجل التمرين • ${s.row['date_local']}', style: const TextStyle(fontSize: 11, color: _sessionMuted)),
               ])),
               PopupMenuButton<String>(
                 tooltip: 'خيارات الجلسة',
