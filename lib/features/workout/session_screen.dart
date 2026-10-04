@@ -119,9 +119,14 @@ class _SessionScreenState extends State<SessionScreen> {
                 onSelected: (value) {
                   if (value == 'rest') showRest(context);
                   if (value == 'abandon') abandon(context, s);
+                  final exercise = s.exercises.where((e) => e['id'] == expandedExerciseId).firstOrNull;
+                  if (exercise != null && value == 'explain') setState(() { final id = exercise['id'] as String; if (!explained.add(id)) explained.remove(id); });
+                  if (exercise != null && value == 'start-rest') startRest(context, exercise, w);
                 },
                 itemBuilder: (_) => [
                   if (s.active) const PopupMenuItem(value: 'rest', child: Text('مؤقت الراحة')),
+                  if (s.active && expandedExerciseId != null && expandedExerciseId != '') const PopupMenuItem(value: 'start-rest', child: Text('بدء راحة للتمرين الحالي')),
+                  if (expandedExerciseId != null && expandedExerciseId != '') const PopupMenuItem(value: 'explain', child: Text('شرح التمرين الحالي وصورته')),
                   if (s.active) const PopupMenuItem(value: 'abandon', child: Text('ترك الجلسة وحفظ الجولات')),
                 ],
               ),
@@ -207,6 +212,10 @@ class _SessionScreenState extends State<SessionScreen> {
     }
   }
 
+  Future<void> startRest(BuildContext context, DbRow exercise, WorkoutController w) async {
+    if (await workoutChange(context, () => w.repository.startTimer(exercise['id'] as String)) && context.mounted) await showRest(context);
+  }
+
   int exerciseSeconds(String id) {
     final elapsed = ((exerciseClock['elapsed'] as Map<String, dynamic>)[id] as num?)?.toInt() ?? 0;
     final started = exerciseClock['started'] as int?;
@@ -269,6 +278,7 @@ class _SessionScreenState extends State<SessionScreen> {
         borderRadius: BorderRadius.circular(open ? 24 : 14),
         boxShadow: open ? [BoxShadow(color: const Color(0xFF1D4935).withValues(alpha: .08), offset: const Offset(0, 7), blurRadius: 24)] : null,
       ),
+      child: Material(color: Colors.transparent, clipBehavior: Clip.antiAlias, borderRadius: BorderRadius.circular(open ? 24 : 14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         header,
         if (open) ...[
@@ -284,22 +294,14 @@ class _SessionScreenState extends State<SessionScreen> {
           if (skipped) Text('سبب التخطي: ${e['skip_reason']}'),
           if (s.active && !skipped)
             SetEntry(key: ValueKey(id), exercise: e, previous: previous[id], onSaved: reload, onSkip: () => toggleSkip(context, e)),
-          Wrap(spacing: 8, children: [
-            if ((e['notes'] as String).isNotEmpty || e['image_file'] != null)
-              TextButton(onPressed: () => setState(() { if (!explained.add(id)) explained.remove(id); }),
-                child: Text(explained.contains(id) ? 'إخفاء الشرح' : 'شرح التمرين', style: const TextStyle(fontSize: 11))),
-            if (s.active) TextButton(onPressed: w.busy ? null : () async {
-              if (await workoutChange(context, () => w.repository.startTimer(id)) && context.mounted) await showRest(context);
-            }, child: Text('راحة ${e['rest_seconds']} ثانية', style: const TextStyle(fontSize: 11))),
-            if (s.active && skipped) TextButton(onPressed: w.busy ? null : () => toggleSkip(context, e), child: const Text('إلغاء التخطي')),
-          ]),
+          if (s.active && skipped) TextButton(onPressed: w.busy ? null : () => toggleSkip(context, e), child: const Text('إلغاء التخطي')),
           if (explained.contains(id)) ...[
             if (e['image_file'] != null) Image.file(File(context.read<ExerciseImageStore>().resolve(e['image_file'] as String)),
               height: 180, fit: BoxFit.contain, errorBuilder: (_, _, _) => const Text('تعذر عرض الصورة')),
             Text(e['notes'] as String),
           ],
         ],
-      ]),
+      ])),
     );
   }
 
@@ -311,12 +313,19 @@ class _SessionScreenState extends State<SessionScreen> {
     int number,
   ) {
     final w = context.read<WorkoutController>();
-    return Padding(
+    return Container(
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFDDE8E1)))),
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Expanded(
-            child: Text('✓ جولة $number: ${setText(set, unit: w.settings.unit)}', style: const TextStyle(fontSize: 11, color: _sessionInk)),
+            child: Text(setText(set, unit: w.settings.unit), style: const TextStyle(fontSize: 11, color: _sessionInk)),
+          ),
+          const SizedBox(width: 8),
+          Text('جولة $number', style: const TextStyle(fontSize: 11, color: _sessionInk)),
+          const SizedBox(width: 6),
+          Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: _sessionSoft, borderRadius: BorderRadius.circular(10)),
+            child: const DesignIcon('30:755')
           ),
           IconButton(
             tooltip: 'تعديل الجولة',
@@ -484,6 +493,7 @@ class _SetEntryState extends State<SetEntry> {
       notes = TextEditingController();
   late String id, unit;
   bool saving = false;
+  bool showNotes = false;
   String? draftError;
   Future<void> writes = Future<void>.value();
   bool get timed => widget.exercise['measurement_type'] == 'duration';
@@ -604,25 +614,29 @@ class _SetEntryState extends State<SetEntry> {
     if (mounted) setState(() => saving = false);
   }
 
-  Widget _weightField() => TextFormField(
+  Widget _weightField() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    Text('الوزن (${unit == 'lb' ? 'باوند' : 'كجم'}) · اختياري', style: const TextStyle(fontSize: 11, color: _sessionMuted)),
+    const SizedBox(height: 6),
+    TextFormField(
     key: const ValueKey('weight-input'), controller: weight, enabled: !saving,
     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _sessionInk),
     textAlign: TextAlign.center,
     keyboardType: const TextInputType.numberWithOptions(decimal: true),
     textDirection: TextDirection.ltr, validator: validWeight, onChanged: (_) => persist(),
-    decoration: InputDecoration(labelText: 'الوزن (${unit == 'lb' ? 'باوند' : 'كجم'})',
-        helperText: 'اختياري', hintText: '—', hintStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: AppColors.muted), floatingLabelBehavior: FloatingLabelBehavior.always),
-  );
+    decoration: InputDecoration(isDense: true, suffixText: unit == 'lb' ? 'lb' : 'كجم', hintText: '—', hintStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: _sessionMuted)),
+  )]);
 
-  Widget _repsField() => TextFormField(
+  Widget _repsField() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    const Text('التكرارات', style: TextStyle(fontSize: 11, color: _sessionMuted)),
+    const SizedBox(height: 6),
+    TextFormField(
     key: const ValueKey('reps-input'), controller: reps, enabled: !saving,
     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _sessionInk),
     textAlign: TextAlign.center,
     keyboardType: TextInputType.number, textDirection: TextDirection.ltr,
     validator: positiveInt, onChanged: (_) => persist(),
-    decoration: const InputDecoration(labelText: 'العدات', hintText: '—', hintStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: AppColors.muted),
-        floatingLabelBehavior: FloatingLabelBehavior.always),
-  );
+    decoration: const InputDecoration(isDense: true, hintText: '—', hintStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: _sessionMuted)),
+  )]);
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -645,6 +659,10 @@ class _SetEntryState extends State<SetEntry> {
                   Text(widget.initial == null ? 'الجولة ${(context.watch<WorkoutController>().active?.sets[widget.exercise['id']]?.length ?? 0) + 1} (التالية):' : 'تصحيح الأداء',
                     key: const ValueKey('next-set-heading'), style: const TextStyle(fontWeight: FontWeight.w800, color: _sessionInk, fontSize: 13)),
                   if (widget.initial == null) Text('${context.watch<WorkoutController>().active?.sets[widget.exercise['id']]?.length ?? 0} / ${(jsonDecode(widget.exercise['plan_json'] as String) as List).length} محفوظة', style: const TextStyle(fontSize: 10, color: _sessionGreen)),
+                  PopupMenuButton<String>(tooltip: 'خيارات الجولة', padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.more_horiz, size: 18, color: _sessionMuted),
+                    onSelected: (_) => setState(() => showNotes = !showNotes),
+                    itemBuilder: (_) => [PopupMenuItem(value: 'notes', child: Text(showNotes ? 'إخفاء ملاحظة الجولة' : 'ملاحظة الجولة'))]),
                 ]),
                 if (draftError != null) Text(draftError!, style: const TextStyle(color: AppColors.danger)),
                 const SizedBox(height: 12),
@@ -667,12 +685,11 @@ class _SetEntryState extends State<SetEntry> {
                 else ...[
                   _weightField(), const SizedBox(height: 16), _repsField(),
                 ],
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero, dense: true,
-                  title: const Text('ملاحظة الجولة (اختياري)', style: TextStyle(fontSize: 11, color: _sessionMuted)),
-                  children: [TextFormField(controller: notes, enabled: !saving, onChanged: (_) => persist(),
-                    decoration: const InputDecoration(labelText: 'ملاحظة الجولة'))],
-                ),
+                if (showNotes || notes.text.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  TextFormField(controller: notes, enabled: !saving, onChanged: (_) => persist(),
+                    decoration: const InputDecoration(labelText: 'ملاحظة الجولة (اختياري)')),
+                ],
         if (widget.previous != null && widget.initial == null)
           TextButton(
             onPressed: saving
@@ -728,7 +745,10 @@ class _SetEntryState extends State<SetEntry> {
                     style: FilledButton.styleFrom(backgroundColor: _sessionLime, foregroundColor: const Color(0xFF21470F),
                       minimumSize: const Size.fromHeight(50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                     onPressed: saving ? null : save,
-                    child: Text(saving ? 'جارٍ الحفظ…' : widget.initial != null ? 'حفظ التعديل' : 'حفظ جولة ${(context.watch<WorkoutController>().active?.sets[widget.exercise['id']]?.length ?? 0) + 1} ✓', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                    child: Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, children: [
+                      Text(saving ? 'جارٍ الحفظ…' : widget.initial != null ? 'حفظ التعديل' : 'حفظ جولة ${(context.watch<WorkoutController>().active?.sets[widget.exercise['id']]?.length ?? 0) + 1}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                      if (!saving) const DesignIcon('30:755'),
+                    ]),
                   )),
                   if (widget.onSkip != null) ...[
                     const SizedBox(width: 10),

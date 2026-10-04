@@ -130,6 +130,7 @@ void main() {
         await tester.pump();
         final save = find.byKey(const ValueKey('save-set'));
         await tester.ensureVisible(save);
+        await tester.pump();
         await tester.tap(save);
         await settle();
         expect(state.active!.setCount, 1);
@@ -160,6 +161,7 @@ void main() {
             tester.testTextInput.hide();
             await settle();
             await tester.ensureVisible(save);
+        await tester.pump();
             await tester.tap(save);
             await settle();
             expect(state.active!.sets[exercises[i]['id']]!.single['weight'], 12.5);
