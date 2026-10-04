@@ -2,6 +2,8 @@
 
 تطبيق Flutter للأندرويد باللغة العربية، يعمل محليًا دون حساب أو خادم.
 
+الإصدار 0.1.1: تخطيط جديد لبطاقات الجولات، زر إنهاء ثابت، هوية كحلي وأزرق وبرتقالي وأيقونة حديد مخصصة.
+
 ## المنفذ حاليًا
 
 - مكتبة التمارين: بحث وتصنيف وإضافة وتعديل وأرشفة واستعادة وصور محلية.
@@ -36,10 +38,10 @@ flutter run
 
 نجح تحليل Dart و139 فحص SQLite: 14 للمكتبة و54 للخطط و71 للجلسات والمؤقت والنسخ الاحتياطي.
 نجح أيضًا اختبار Flutter للواجهات وبناء APK للمعماريات الثلاث في
-[التشغيل المختبر](https://github.com/alabalala1/Hadeed/actions/runs/36848478179)،
-من كود الإصدار `5defc024`. راجعت لقطات اليوم والجلسة والسجل والإعدادات، ومنها شاشة صغيرة مع تكبير النص.
+[التشغيل المختبر](https://github.com/alabalala1/Hadeed/actions/runs/37187924162)،
+من كود الإصدار `5c600321`. الاختبار يفتح البطاقات العشر ويسجل ويعدل جولة في التمرين الثاني وينهي الجلسة من الواجهة. راجعت لقطات اليوم والجلسة والسجل والإعدادات، ومنها شاشة صغيرة مع تكبير النص.
 اختبار إشعارات الخلفية وقفل الشاشة والاستعادة على هاتف فعلي ما زال مطلوبًا.
-التفاصيل في `docs/STEP_04.md` والدليل في `docs/GYM_APP_SPEC.md`.
+التفاصيل في `docs/STEP_04.md` و`docs/STEP_05.md` والدليل في `docs/GYM_APP_SPEC.md`.
 
 ## تحميل APK من GitHub Actions
 
@@ -51,11 +53,12 @@ Actions → Build Android APKs → Run workflow. يجري تحليل Flutter و�
 
 | الملف | المعمارية | حجم APK المختبر |
 | --- | --- | --- |
-| [Hadeed-arm64-v8a](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11155025679) | ARM 64-bit | 19.8 MB |
-| [Hadeed-armeabi-v7a](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11154637861) | ARM 32-bit | 17.4 MB |
-| [Hadeed-x86_64](https://github.com/alabalala1/Hadeed/actions/runs/36848478179/artifacts/11154961586) | x86 64-bit، ومنها محاكيات Android | 21.3 MB |
+| [Hadeed-arm64-v8a](https://github.com/alabalala1/Hadeed/actions/runs/37187924162/artifacts/11297651827) | ARM 64-bit | 19.8 MB |
+| [Hadeed-armeabi-v7a](https://github.com/alabalala1/Hadeed/actions/runs/37187924162/artifacts/11297537085) | ARM 32-bit | 17.5 MB |
+| [Hadeed-x86_64](https://github.com/alabalala1/Hadeed/actions/runs/37187924162/artifacts/11297272752) | x86 64-bit، ومنها محاكيات Android | 21.3 MB |
 
 الملفات تبقى 30 يومًا. يعرض ملخص التشغيل حجم كل APK، ورقم البناء يتزايد مع التشغيل.
 التوقيع الحالي للتطوير، ويُنشأ على runner؛ قد يلزم حذف النسخة السابقة إذا تغير المفتاح.
+صدّر نسخة .hadeed من الإعدادات قبل الحذف، ثم استعدها في النسخة الجديدة.
 قبل الاستخدام المستمر أو النشر يجب إعداد مفتاح توقيع ثابت محفوظ في GitHub Secrets.
 إضافة workflow وحدها لا تعني نجاح بناء APK؛ نتيجة التشغيل في Actions هي المرجع.
