@@ -127,7 +127,7 @@ class _SessionScreenState extends State<SessionScreen> {
   Widget _sessionActions(BuildContext context, SessionRecord s, WorkoutController w) =>
       Material(
         color: Colors.white,
-        elevation: 12,
+        elevation: 0,
         child: SafeArea(
           top: false,
           minimum: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -200,7 +200,7 @@ class _SessionScreenState extends State<SessionScreen> {
                         Text('${(e['sort_order'] as int) + 1}. ${e['name']}',
                             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.text)),
                         const SizedBox(height: 6),
-                        Text('${sets.length} / ${plans.length} جولات${skipped ? ' · متخطى' : ''}${e['group_id'] == null ? '' : ' · سوبر سيت'}',
+                        Text('${sets.length} جولات محفوظة · الهدف ${plans.length}${skipped ? ' · متخطى' : ''}${e['group_id'] == null ? '' : ' · سوبر سيت'}',
                             style: TextStyle(color: skipped ? AppColors.warning : AppColors.primary, fontWeight: FontWeight.w700)),
                       ],
                     ),
@@ -594,7 +594,7 @@ class _SetEntryState extends State<SetEntry> {
     keyboardType: const TextInputType.numberWithOptions(decimal: true),
     textDirection: TextDirection.ltr, validator: validWeight, onChanged: (_) => persist(),
     decoration: InputDecoration(labelText: 'الوزن (${unit == 'lb' ? 'باوند' : 'كجم'})',
-        helperText: 'اختياري', hintText: '7.5', floatingLabelBehavior: FloatingLabelBehavior.always),
+        helperText: 'اختياري', hintText: '7.5', hintStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: AppColors.muted), floatingLabelBehavior: FloatingLabelBehavior.always),
   );
 
   Widget _repsField() => TextFormField(
@@ -602,7 +602,7 @@ class _SetEntryState extends State<SetEntry> {
     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.text),
     keyboardType: TextInputType.number, textDirection: TextDirection.ltr,
     validator: positiveInt, onChanged: (_) => persist(),
-    decoration: const InputDecoration(labelText: 'العدات', helperText: 'عدد صحيح', hintText: '10',
+    decoration: const InputDecoration(labelText: 'العدات', helperText: 'عدد صحيح', hintText: '10', hintStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: AppColors.muted),
         floatingLabelBehavior: FloatingLabelBehavior.always),
   );
 
@@ -849,7 +849,7 @@ class _SessionSummary extends StatelessWidget {
     final settings = context.watch<WorkoutController>().settings;
     return Scaffold(
       bottomNavigationBar: Material(
-        color: Colors.white, elevation: 8,
+        color: Colors.white, elevation: 0,
         child: SafeArea(top: false, minimum: const EdgeInsets.all(16),
           child: ActionButton('حفظ وإنهاء الجلسة',
             onPressed: session.setCount == 0 ? null : () => Navigator.pop(context, true)),

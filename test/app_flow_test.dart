@@ -195,9 +195,12 @@ void main() {
         await settle();
         await settle();
         expect(state.active, isNull);
+        await settle();
+        await tester.pumpAndSettle();
+        expect(find.text('السجل').last.hitTestable(), findsOneWidget);
         await tester.tap(find.text('السجل').last);
         await settle();
-        expect(find.text('مكتملة').first, findsOneWidget);
+        expect(find.text('مكتملة'), findsWidgets);
         expect(tester.takeException(), isNull);
         await tester.runAsync(() => capture('history'));
         await tester.tap(find.text('اليوم').last);
