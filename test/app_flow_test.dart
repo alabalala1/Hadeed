@@ -106,11 +106,8 @@ void main() {
           tester.element(find.text('الجولة القادمة')),
           listen: false,
         );
-        final weight = find.widgetWithText(
-          TextFormField,
-          'الوزن (كجم) — اختياري',
-        );
-        final reps = find.widgetWithText(TextFormField, 'التكرارات الفعلية');
+        final weight = find.byKey(const ValueKey('weight-input'));
+        final reps = find.byKey(const ValueKey('reps-input'));
         await tester.ensureVisible(weight);
         await tester.enterText(weight, '٧٫٥');
         await tester.ensureVisible(reps);
@@ -141,17 +138,63 @@ void main() {
           7.5,
         );
         expect(tester.takeException(), isNull);
-        await tester.drag(find.byType(ListView).last, const Offset(0, 2000));
+        await tester.ensureVisible(heading);
         await tester.pump();
         await tester.runAsync(() => capture('session'));
-        await tester.runAsync(
-          () => state.change(
-            () => repository.finish(state.active!.id, allowPartial: true),
-          ),
-        );
-        await tester.tap(find.byTooltip('رجوع'));
+        final exercises = state.active!.exercises;
+        for (var i = 1; i < exercises.length; i++) {
+          final header = find.byKey(ValueKey('exercise-header-${exercises[i]['id']}'));
+          await tester.ensureVisible(header);
+          await tester.pump();
+          await tester.tap(header);
+          await settle();
+          expect(tester.takeException(), isNull, reason: 'Exercise ${i + 1} must render after opening');
+          expect(find.byType(ErrorWidget), findsNothing);
+          final entryForm = find.byType(Form);
+          expect(tester.getSize(entryForm).height, lessThan(700));
+          if (i == 1) {
+            await tester.ensureVisible(weight);
+            await tester.enterText(weight, '12.5');
+            await tester.ensureVisible(reps);
+            await tester.enterText(reps, '12');
+            tester.testTextInput.hide();
+            await settle();
+            await tester.ensureVisible(save);
+            await tester.tap(save);
+            await settle();
+            expect(state.active!.sets[exercises[i]['id']]!.single['weight'], 12.5);
+            await tester.ensureVisible(header);
+            await tester.pump();
+            await tester.runAsync(() => capture('session-second-exercise'));
+          }
+          final finish = find.byKey(const ValueKey('finish-session'));
+          expect(finish.hitTestable(), findsOneWidget, reason: 'Finish must stay visible while scrolling');
+        }
+        // Reopen the second card with large text on a compact display.
+        final second = find.byKey(ValueKey('exercise-header-${exercises[1]['id']}'));
+        tester.view.physicalSize = const Size(320, 740);
+        tester.binding.platformDispatcher.textScaleFactorTestValue = 1.8;
+        await tester.pump();
+        await tester.ensureVisible(second);
+        await tester.tap(second);
+        await settle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(ErrorWidget), findsNothing);
+        expect(tester.getSize(find.byType(Form)).height, lessThan(1000));
+        await tester.ensureVisible(second);
+        await tester.pump();
+        await tester.runAsync(() => capture('session-small-large-text'));
+        tester.view.physicalSize = const Size(402, 874);
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('finish-session')));
         await settle();
         await settle();
+        expect(find.text('ملخص الجلسة'), findsOneWidget);
+        await tester.tap(find.text('حفظ وإنهاء الجلسة'));
+        await settle();
+        await settle();
+        expect(state.active, isNull);
         await tester.tap(find.text('السجل').last);
         await settle();
         expect(find.text('مكتملة').first, findsOneWidget);

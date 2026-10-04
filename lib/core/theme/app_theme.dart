@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const primary = Color(0xFF2563EB);
-  static const primaryPressed = Color(0xFF1D4ED8);
-  static const primarySoft = Color(0xFFDBEAFE);
-  static const comparison = Color(0xFFEFF6FF);
-  static const background = Color(0xFFF7FAFC);
+  static const accent = Color(0xFFF97316);
+  static const inputPanel = Color(0xFFF4F6FC);
+  static const navy = Color(0xFF0D1733);
+  static const primary = Color(0xFF2357F5);
+  static const primaryPressed = Color(0xFF173AB8);
+  static const primarySoft = Color(0xFFE6EDFF);
+  static const comparison = Color(0xFFEEF2FF);
+  static const background = Color(0xFFF0F3FA);
   static const surface = Colors.white;
-  static const text = Color(0xFF172033);
-  static const muted = Color(0xFF617086);
-  static const border = Color(0xFFDEE6F0);
-  static const success = Color(0xFF168A68);
-  static const warning = Color(0xFFD58A16);
-  static const danger = Color(0xFFC84343);
+  static const text = Color(0xFF0D1733);
+  static const muted = Color(0xFF465775);
+  static const border = Color(0xFFD9E1F0);
+  static const success = Color(0xFF087C5A);
+  static const warning = Color(0xFFAD4C08);
+  static const danger = Color(0xFFC12E44);
 }
 
 ThemeData appTheme() => ThemeData(
@@ -22,6 +25,9 @@ ThemeData appTheme() => ThemeData(
   colorScheme: ColorScheme.fromSeed(
     seedColor: AppColors.primary,
     surface: AppColors.surface,
+    primary: AppColors.primary,
+    secondary: AppColors.accent,
+    onSurface: AppColors.text,
   ),
   textTheme: const TextTheme(
     headlineSmall: TextStyle(
@@ -46,6 +52,7 @@ ThemeData appTheme() => ThemeData(
     filled: true,
     fillColor: AppColors.surface,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+    labelStyle: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: AppColors.border),
@@ -74,11 +81,12 @@ ThemeData appTheme() => ThemeData(
   ),
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-      foregroundColor: AppColors.muted,
+      foregroundColor: AppColors.primaryPressed,
       minimumSize: const Size(48, 52),
       side: const BorderSide(color: AppColors.border),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   ),
+  expansionTileTheme: const ExpansionTileThemeData(shape: Border(), collapsedShape: Border()),
   dividerTheme: const DividerThemeData(color: AppColors.border, space: 32),
 );

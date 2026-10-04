@@ -19,12 +19,14 @@ class WorkoutCard extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 16),
     child: Material(
       color: tint ?? Colors.white,
+      elevation: highlight ? 4 : 1,
+      shadowColor: AppColors.navy.withValues(alpha: 0.12),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: highlight ? AppColors.primary : AppColors.border,
-          width: highlight ? 1.5 : 1,
+          width: highlight ? 1.5 : 0.6,
         ),
       ),
       child: SizedBox(

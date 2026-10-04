@@ -26,7 +26,13 @@ class ScreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-    child: Row(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [AppColors.navy, Color(0xFF203A6D)]),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
       children: [
         if (back) ...[
           IconButton(
@@ -47,16 +53,17 @@ class ScreenHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                style: const TextStyle(color: Color(0xFFCCD9F5), fontSize: 13),
               ),
             ],
           ),
         ),
       ],
+    ),
     ),
   );
 }

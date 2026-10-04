@@ -25,6 +25,8 @@ class _SessionScreenState extends State<SessionScreen> {
   SessionRecord? cached;
   final previous = <String, DbRow?>{};
   String? error;
+  String? expandedExerciseId;
+  final explained = <String>{};
   @override
   void initState() {
     super.initState();
@@ -68,7 +70,9 @@ class _SessionScreenState extends State<SessionScreen> {
       );
     }
     return Scaffold(
+      bottomNavigationBar: s.active ? _sessionActions(context, s, w) : null,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             ScreenHeader(
@@ -77,213 +81,211 @@ class _SessionScreenState extends State<SessionScreen> {
               back: true,
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
+              child: SingleChildScrollView(
+                key: const ValueKey('session-scroll'),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   if (w.error != null)
-                    Text(
-                      w.error!,
-                      style: const TextStyle(color: AppColors.danger),
-                    ),
+                    Text(w.error!, style: const TextStyle(color: AppColors.danger)),
                   if (!s.active)
                     WorkoutCard(
                       child: Wrap(
                         alignment: WrapAlignment.spaceAround,
                         children: [
-                          Metric(
-                            'الحالة',
-                            s.row['status'] == 'completed'
-                                ? 'مكتملة'
-                                : 'متروكة',
-                          ),
+                          Metric('الحالة', s.row['status'] == 'completed' ? 'مكتملة' : 'متروكة'),
                           Metric('الجولات', '${s.setCount}'),
-                          Metric(
-                            'الحجم',
-                            '${s.volume.toStringAsFixed(1)} كجم × عدة',
-                          ),
-                          Metric(
-                            'الإنجاز',
-                            s.plannedCount == 0
-                                ? 'غير محدد'
-                                : '${(100 * s.plannedDone / s.plannedCount).round()}٪',
-                          ),
+                          Metric('الحجم', '${s.volume.toStringAsFixed(1)} كجم × عدة'),
                         ],
                       ),
                     ),
-                  if (s.active &&
-                      w.timer != null &&
-                      w.timer!['session_id'] == s.id)
-                    ActionButton(
-                      remainingSeconds(w.timer!, DateTime.now()) == 0
-                          ? 'انتهت الراحة'
-                          : 'الراحة: ${clockText(remainingSeconds(w.timer!, DateTime.now()))}',
-                      secondary: true,
-                      onPressed: () => showRest(context),
-                    ),
-                  for (final e in s.exercises)
-                    WorkoutCard(
-                      highlight: s.active,
-                      child: ExpansionTile(
-                        key: PageStorageKey(e['id']),
-                        initiallyExpanded:
-                            !s.active || e['id'] == s.exercises.first['id'],
-                        tilePadding: EdgeInsets.zero,
-                        childrenPadding: EdgeInsets.zero,
-                        title: Text(
-                          '${(e['sort_order'] as int) + 1}. ${e['name']}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 17,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '${s.sets[e['id']]!.length} جولات مسجلة${e['skipped'] == 1 ? ' · متخطى' : ''}${e['group_id'] == null ? '' : ' · سوبر سيت'}',
-                        ),
-                        children: [
-                          if (e['image_file'] != null)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Image.file(
-                                File(
-                                  context.read<ExerciseImageStore>().resolve(
-                                    e['image_file'] as String,
-                                  ),
-                                ),
-                                height: 180,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) =>
-                                    const Text('تعذر عرض الصورة'),
-                              ),
-                            ),
-                          if ((e['notes'] as String).isNotEmpty)
-                            Text(e['notes'] as String),
-                          if (e['per_leg'] == 1)
-                            const Text('العدات المستهدفة لكل رجل'),
-                          for (final p
-                              in (jsonDecode(e['plan_json'] as String) as List))
-                            Text(
-                              'هدف جولة ${(p['sort_order'] as int) + 1}: ${PlannedSet.fromRow(Map<String, Object?>.from(p as Map)).describe(e['measurement_type'] == 'reps' ? MeasurementType.reps : MeasurementType.duration)}',
-                            ),
-                          if (previous[e['id']] != null)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.symmetric(vertical: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const DesignIcon('2:574'),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'آخر مرة: ${previous[e['id']]!['date_local']} · ${previous[e['id']]!['day_name']}',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  for (final p
-                                      in previous[e['id']]!['sets']
-                                          as List<DbRow>)
-                                    Text(
-                                      'جولة ${(p['sort_order'] as int) + 1}: ${setText(p, unit: w.settings.unit)}',
-                                    ),
-                                ],
-                              ),
-                            ),
-                          for (var i = 0; i < s.sets[e['id']]!.length; i++)
-                            _setRow(context, s, e, s.sets[e['id']]![i], i + 1),
-                          if (e['skipped'] == 1)
-                            Text('سبب التخطي: ${e['skip_reason']}'),
-                          if (s.active) ...[
-                            if (e['skipped'] == 0)
-                              SetEntry(
-                                key: ValueKey(e['id']),
-                                exercise: e,
-                                previous: previous[e['id']],
-                                onSaved: reload,
-                              ),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                TextButton(
-                                  onPressed: w.busy
-                                      ? null
-                                      : () async {
-                                          await workoutChange(
-                                            context,
-                                            () => w.repository.startTimer(
-                                              e['id'] as String,
-                                            ),
-                                          );
-                                          if (context.mounted) {
-                                            await showRest(context);
-                                          }
-                                        },
-                                  child: Text(
-                                    'راحة ${e['rest_seconds']} ثانية',
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: w.busy
-                                      ? null
-                                      : () => toggleSkip(context, e),
-                                  child: Text(
-                                    e['skipped'] == 1
-                                        ? 'إلغاء التخطي'
-                                        : 'تخطي التمرين',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
+                  if (s.active && w.timer != null && w.timer!['session_id'] == s.id)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: ActionButton(
+                        remainingSeconds(w.timer!, DateTime.now()) == 0
+                            ? 'انتهت الراحة'
+                            : 'الراحة: ${clockText(remainingSeconds(w.timer!, DateTime.now()))}',
+                        secondary: true,
+                        onPressed: () => showRest(context),
                       ),
                     ),
-                  if (s.active) ...[
-                    ActionButton(
-                      'مراجعة وإنهاء الجلسة',
-                      onPressed: w.busy ? null : () => finish(context, s),
-                    ),
-                    const SizedBox(height: 12),
-                    ActionButton(
-                      'ترك الجلسة وحفظ الجولات',
-                      secondary: true,
-                      onPressed: w.busy
-                          ? null
-                          : () async {
-                              if (!await confirm(
-                                context,
-                                'ترك الجلسة',
-                                'ستحفظ الجولات السابقة دون نقل دور التدريب. يبقى هذا التاريخ مسجلًا بهذه الجلسة.',
-                              )) {
-                                return;
-                              }
-                              if (context.mounted &&
-                                  await workoutChange(
-                                    context,
-                                    () => w.repository.finish(
-                                      s.id,
-                                      abandon: true,
-                                    ),
-                                  ) &&
-                                  context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                    ),
-                  ],
-                  const SizedBox(height: 24),
+                  for (final e in s.exercises) _exerciseCard(context, s, e, w),
+                  const SizedBox(height: 16),
                 ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _sessionActions(BuildContext context, SessionRecord s, WorkoutController w) =>
+      Material(
+        color: Colors.white,
+        elevation: 12,
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${s.setCount} جولة محفوظة · ${s.performedCount} من ${s.exercises.length} تمارين',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      key: const ValueKey('finish-session'),
+                      onPressed: w.busy ? null : () => finish(context, s),
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: const Text('إنهاء الجلسة', textAlign: TextAlign.center),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: 'ترك الجلسة وحفظ الجولات',
+                    onPressed: w.busy ? null : () => abandon(context, s),
+                    icon: const Icon(Icons.more_horiz),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Future<void> abandon(BuildContext context, SessionRecord s) async {
+    if (!await confirm(context, 'ترك الجلسة',
+        'ستحفظ الجولات السابقة دون نقل دور التدريب. يبقى هذا التاريخ مسجلًا بهذه الجلسة.')) return;
+    if (!context.mounted) return;
+    final w = context.read<WorkoutController>();
+    if (await workoutChange(context, () => w.repository.finish(s.id, abandon: true)) && context.mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _exerciseCard(BuildContext context, SessionRecord s, DbRow e, WorkoutController w) {
+    final id = e['id'] as String;
+    final open = expandedExerciseId == id ||
+        (expandedExerciseId == null && e['id'] == s.exercises.first['id']);
+    final sets = s.sets[id]!;
+    final plans = jsonDecode(e['plan_json'] as String) as List;
+    final skipped = e['skipped'] == 1;
+    return WorkoutCard(
+      key: ValueKey('exercise-card-$id'),
+      highlight: open,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            key: ValueKey('exercise-header-$id'),
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => setState(() => expandedExerciseId = open ? '' : id),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${(e['sort_order'] as int) + 1}. ${e['name']}',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.text)),
+                        const SizedBox(height: 6),
+                        Text('${sets.length} / ${plans.length} جولات${skipped ? ' · متخطى' : ''}${e['group_id'] == null ? '' : ' · سوبر سيت'}',
+                            style: TextStyle(color: skipped ? AppColors.warning : AppColors.primary, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(open ? Icons.expand_less : Icons.expand_more, color: AppColors.primary),
+                ],
+              ),
+            ),
+          ),
+          if (open) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8, runSpacing: 8,
+              children: [
+                for (final p in plans)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
+                    child: Text('جولة ${(p['sort_order'] as int) + 1}: ${PlannedSet.fromRow(Map<String, Object?>.from(p as Map)).describe(e['measurement_type'] == 'reps' ? MeasurementType.reps : MeasurementType.duration)}',
+                        style: const TextStyle(color: AppColors.primaryPressed, fontWeight: FontWeight.w700, fontSize: 12)),
+                  ),
+              ],
+            ),
+            if (e['per_leg'] == 1) const Text('العدات المستهدفة لكل رجل'),
+            if ((e['notes'] as String).isNotEmpty || e['image_file'] != null)
+              TextButton.icon(
+                onPressed: () => setState(() {
+                  if (!explained.add(id)) explained.remove(id);
+                }),
+                icon: const Icon(Icons.info_outline, size: 18),
+                label: Text(explained.contains(id) ? 'إخفاء شرح التمرين' : 'شرح التمرين'),
+              ),
+            if (explained.contains(id)) ...[
+              if (e['image_file'] != null)
+                Image.file(File(context.read<ExerciseImageStore>().resolve(e['image_file'] as String)),
+                    height: 180, fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Text('تعذر عرض الصورة')),
+              Text(e['notes'] as String),
+              const SizedBox(height: 12),
+            ],
+            if (previous[id] != null)
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: AppColors.comparison, borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('آخر مرة: ${previous[id]!['date_local']} · ${previous[id]!['day_name']}',
+                        style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primaryPressed)),
+                    for (final p in previous[id]!['sets'] as List<DbRow>)
+                      Text('جولة ${(p['sort_order'] as int) + 1}: ${setText(p, unit: w.settings.unit)}'),
+                  ],
+                ),
+              ),
+            if (sets.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Text('الجولات المحفوظة', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.success)),
+              for (var i = 0; i < sets.length; i++) _setRow(context, s, e, sets[i], i + 1),
+            ],
+            if (skipped) Text('سبب التخطي: ${e['skip_reason']}'),
+            if (s.active) ...[
+              if (!skipped)
+                SetEntry(key: ValueKey(id), exercise: e, previous: previous[id], onSaved: reload),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: w.busy ? null : () async {
+                      if (await workoutChange(context, () => w.repository.startTimer(id)) && context.mounted) {
+                        await showRest(context);
+                      }
+                    },
+                    icon: const Icon(Icons.timer_outlined, size: 18),
+                    label: Text('راحة ${e['rest_seconds']} ثانية'),
+                  ),
+                  TextButton(
+                    onPressed: w.busy ? null : () => toggleSkip(context, e),
+                    child: Text(skipped ? 'إلغاء التخطي' : 'تخطي التمرين'),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ],
       ),
     );
   }
@@ -584,64 +586,76 @@ class _SetEntryState extends State<SetEntry> {
     if (mounted) setState(() => saving = false);
   }
 
+  Widget _weightField() => TextFormField(
+    key: const ValueKey('weight-input'), controller: weight, enabled: !saving,
+    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.text),
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    textDirection: TextDirection.ltr, validator: validWeight, onChanged: (_) => persist(),
+    decoration: InputDecoration(labelText: 'الوزن (${unit == 'lb' ? 'باوند' : 'كجم'})',
+        helperText: 'اختياري', hintText: '7.5', floatingLabelBehavior: FloatingLabelBehavior.always),
+  );
+
+  Widget _repsField() => TextFormField(
+    key: const ValueKey('reps-input'), controller: reps, enabled: !saving,
+    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.text),
+    keyboardType: TextInputType.number, textDirection: TextDirection.ltr,
+    validator: positiveInt, onChanged: (_) => persist(),
+    decoration: const InputDecoration(labelText: 'العدات', helperText: 'عدد صحيح', hintText: '10',
+        floatingLabelBehavior: FloatingLabelBehavior.always),
+  );
+
   @override
-  Widget build(BuildContext context) => Form(
-    key: form,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          widget.initial == null ? 'الجولة القادمة' : 'تصحيح الأداء',
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        if (draftError != null)
-          Text(draftError!, style: const TextStyle(color: AppColors.danger)),
-        const SizedBox(height: 12),
-        if (timed)
-          TextFormField(
-            controller: duration,
-            enabled: !saving,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            textDirection: TextDirection.ltr,
-            validator: positiveDuration,
-            onChanged: (_) => persist(),
-            decoration: const InputDecoration(
-              labelText: 'المدة الفعلية (دقيقة)',
-            ),
-          )
-        else ...[
-          TextFormField(
-            controller: weight,
-            enabled: !saving,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            textDirection: TextDirection.ltr,
-            validator: validWeight,
-            onChanged: (_) => persist(),
-            decoration: InputDecoration(
-              labelText: 'الوزن (${unit == 'lb' ? 'باوند' : 'كجم'}) — اختياري',
-            ),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      // Every form has a finite width, including forms opened after scrolling
+      // and correction dialogs. No flex child receives an unbounded axis.
+      final width = constraints.hasBoundedWidth ? constraints.maxWidth : MediaQuery.sizeOf(context).width - 80;
+      final sideBySide = width >= 300 && MediaQuery.textScalerOf(context).scale(16) <= 22;
+      return SizedBox(
+        width: width,
+        child: Container(
+          margin: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.inputPanel,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: reps,
-            enabled: !saving,
-            keyboardType: TextInputType.number,
-            textDirection: TextDirection.ltr,
-            validator: positiveInt,
-            onChanged: (_) => persist(),
-            decoration: const InputDecoration(labelText: 'التكرارات الفعلية'),
-          ),
-        ],
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: notes,
-          enabled: !saving,
-          onChanged: (_) => persist(),
-          decoration: const InputDecoration(
-            labelText: 'ملاحظة الجولة (اختياري)',
-          ),
-        ),
+          child: Form(
+            key: form,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(widget.initial == null ? 'الجولة القادمة' : 'تصحيح الأداء',
+                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.text, fontSize: 16)),
+                const Text('أدخل أداءك الفعلي ثم احفظ الجولة', style: TextStyle(fontSize: 12)),
+                if (draftError != null) Text(draftError!, style: const TextStyle(color: AppColors.danger)),
+                const SizedBox(height: 20),
+                if (timed)
+                  TextFormField(
+                    key: const ValueKey('duration-input'),
+                    controller: duration, enabled: !saving,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    textDirection: TextDirection.ltr, validator: positiveDuration, onChanged: (_) => persist(),
+                    decoration: const InputDecoration(labelText: 'المدة الفعلية (دقيقة)',
+                        floatingLabelBehavior: FloatingLabelBehavior.always),
+                  )
+                else if (sideBySide)
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(child: _weightField()),
+                    const SizedBox(width: 12),
+                    Expanded(child: _repsField()),
+                  ])
+                else ...[
+                  _weightField(), const SizedBox(height: 16), _repsField(),
+                ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: notes, enabled: !saving, onChanged: (_) => persist(),
+                  decoration: const InputDecoration(labelText: 'ملاحظة الجولة (اختياري)'),
+                ),
         if (widget.previous != null && widget.initial == null)
           TextButton(
             onPressed: saving
@@ -690,14 +704,14 @@ class _SetEntryState extends State<SetEntry> {
               'تعبئة من الجولة المناظرة في آخر مرة (لم تُحفظ بعد)',
             ),
           ),
-        const SizedBox(height: 12),
-        ActionButton(
-          saving ? 'جارٍ الحفظ…' : 'حفظ الجولة',
-          node: '2:688',
-          onPressed: saving ? null : save,
+                const SizedBox(height: 16),
+                ActionButton(saving ? 'جارٍ الحفظ…' : 'حفظ الجولة', node: '2:688', onPressed: saving ? null : save),
+              ],
+            ),
+          ),
         ),
-      ],
-    ),
+      );
+    },
   );
   @override
   void dispose() {
@@ -832,6 +846,13 @@ class _SessionSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<WorkoutController>().settings;
     return Scaffold(
+      bottomNavigationBar: Material(
+        color: Colors.white, elevation: 8,
+        child: SafeArea(top: false, minimum: const EdgeInsets.all(16),
+          child: ActionButton('حفظ وإنهاء الجلسة',
+            onPressed: session.setCount == 0 ? null : () => Navigator.pop(context, true)),
+        ),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
@@ -919,13 +940,6 @@ class _SessionSummary extends StatelessWidget {
                   'جلسة جزئية — تمارين غير مكتملة أو متخطاة:\n$missing\nبالضغط على حفظ وإنهاء تؤكد إكمالها جزئيًا ونقل دورة التدريب.',
                 ),
               ),
-            ActionButton(
-              'حفظ وإنهاء الجلسة',
-              onPressed: session.setCount == 0
-                  ? null
-                  : () => Navigator.pop(context, true),
-            ),
-            const SizedBox(height: 12),
             ActionButton(
               'العودة لتعديل الجلسة',
               secondary: true,

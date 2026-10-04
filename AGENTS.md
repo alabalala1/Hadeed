@@ -1,6 +1,6 @@
 # Hadeed
 
-Read docs/GYM_APP_SPEC.md and docs/STEP_04.md before changes.
+Read docs/GYM_APP_SPEC.md, docs/STEP_04.md and docs/STEP_05.md before changes.
 Steps 1–4 implement the offline Android application, sessions, timers, history and backup.
 Work incrementally; every new screen must use local SQLite for its saved data.
 
@@ -22,3 +22,6 @@ Work incrementally; every new screen must use local SQLite for its saved data.
 - Store weights in kg; lb is an input/display conversion. Blank weight is null, never implicit zero.
 - Validate backups in an isolated database before confirmation. Stage images before transactional replacement.
 - Native alarm payload is a mirror; SQLite deadlines and status remain authoritative.
+
+- Latest visual direction: navy/electric blue/orange per STEP_05; keep forms width-bounded and session completion pinned outside scrolling.
+- Regression tests must open later exercise cards, not just the initially expanded first card.
