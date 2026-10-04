@@ -162,7 +162,9 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> abandon(BuildContext context, SessionRecord s) async {
     if (!await confirm(context, 'ترك الجلسة',
-        'ستحفظ الجولات السابقة دون نقل دور التدريب. يبقى هذا التاريخ مسجلًا بهذه الجلسة.')) return;
+        'ستحفظ الجولات السابقة دون نقل دور التدريب. يبقى هذا التاريخ مسجلًا بهذه الجلسة.')) {
+      return;
+    }
     if (!context.mounted) return;
     final w = context.read<WorkoutController>();
     if (await workoutChange(context, () => w.repository.finish(s.id, abandon: true)) && context.mounted) {
