@@ -326,7 +326,9 @@ class _SessionScreenState extends State<SessionScreen> {
                       builder: (_) => AlertDialog(
                         title: Text('تعديل جولة $number'),
                         content: SingleChildScrollView(
-                          child: SetEntry(
+                          child: SizedBox(
+                            width: MediaQuery.sizeOf(context).width - 96,
+                            child: SetEntry(
                             exercise: e,
                             initial: set,
                             correction: !s.active,
@@ -334,6 +336,7 @@ class _SessionScreenState extends State<SessionScreen> {
                               await reload();
                               if (context.mounted) Navigator.pop(context);
                             },
+                          ),
                           ),
                         ),
                       ),
