@@ -67,7 +67,16 @@ void main() {
       await tester.runAsync(() async {
         final file = File(images.resolve(mediaFile));
         await file.parent.create(recursive: true);
-        await file.writeAsBytes(base64Decode('iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAIAAABt+uBvAAAA9ElEQVR4nO3csQ2DAAwAwRBlAkZJhegZIVMyAgtkLCaATxNBcVe7sF6uPYzz+8Gx59UL3J1AQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaDw+mVo3aZ/73GJz/LNGRcUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAY/O4454KCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgsANuyAS9qyIqYAAAAABJRU5ErkJggg=='));
+        final recorder = ui.PictureRecorder();
+        final canvas = Canvas(recorder);
+        canvas.drawRect(const Rect.fromLTWH(0, 0, 96, 96), Paint()..color = const Color(0xFF123A32));
+        canvas.drawRect(const Rect.fromLTWH(12, 36, 72, 24), Paint()..color = const Color(0xFFBDF56A));
+        final picture = recorder.endRecording();
+        final image = await picture.toImage(96, 96);
+        final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
+        await file.writeAsBytes(bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+        image.dispose();
+        picture.dispose();
         final row = (await db.query('exercises', where: 'name=?', whereArgs: ['بنش صدر مستوي'])).single;
         await ExerciseRepository(db).save(Exercise.fromRow({...row, 'image_file': mediaFile}));
       });
@@ -105,6 +114,9 @@ void main() {
         expect(find.text('الحصة التدريبية اليوم'), findsOneWidget);
         expect(tester.takeException(), isNull);
         expect(find.descendant(of: find.byKey(const ValueKey('today-header')), matching: find.byTooltip('الإعدادات')), findsOneWidget);
+        await tester.runAsync(() => precacheImage(FileImage(File(images.resolve(mediaFile))),
+          tester.element(find.byKey(const ValueKey('today-header')))));
+        await tester.pump();
         await tester.runAsync(() => capture('today'));
         await tester.tap(find.text('الجدول').last);
         await settle();
