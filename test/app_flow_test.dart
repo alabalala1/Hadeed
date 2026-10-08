@@ -138,6 +138,7 @@ void main() {
         expect(find.textContaining('تعذر عرض الصورة المرفقة'), findsNothing);
         await tester.runAsync(() => capture('exercise-media'));
         await tester.tap(find.byTooltip('إغلاق الصورة'));
+        await tester.pumpAndSettle();
         await settle();
         await settle();
         await tester.tap(find.text('اليوم').last);
@@ -171,6 +172,7 @@ void main() {
         expect(find.byKey(const ValueKey('exercise-media-viewer')), findsOneWidget);
         expect(find.textContaining('تعذر عرض الصورة المرفقة'), findsNothing);
         await tester.tap(find.byTooltip('إغلاق الصورة'));
+        await tester.pumpAndSettle();
         await settle();
         await settle();
         expect(tester.widget<TextFormField>(weight).controller!.text, '٧٫٥');
@@ -230,6 +232,7 @@ void main() {
             await settle();
             expect(find.byKey(const ValueKey('exercise-media-viewer')), findsOneWidget);
             await tester.tap(find.byTooltip('إغلاق الصورة'));
+        await tester.pumpAndSettle();
             await settle();
             await settle();
             await tester.ensureVisible(weight);
