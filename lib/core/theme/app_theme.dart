@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const accent = Color(0xFFF97316);
-  static const inputPanel = Color(0xFFF4F6FC);
-  static const navy = Color(0xFF0D1733);
-  static const primary = Color(0xFF2357F5);
-  static const primaryPressed = Color(0xFF173AB8);
-  static const primarySoft = Color(0xFFE6EDFF);
-  static const comparison = Color(0xFFEEF2FF);
-  static const background = Color(0xFFF0F3FA);
+  static const dark = Color(0xFF123A32);
+  static const onAccent = Color(0xFF21470F);
+  static const onDarkMuted = Color(0xFFA8C5B9);
+  static const accent = Color(0xFFBDF56A);
+  static const inputPanel = Color(0xFFF8FBF6);
+  static const navy = Color(0xFF132B2A);
+  static const primary = Color(0xFF2A7552);
+  static const primaryPressed = Color(0xFF123A32);
+  static const primarySoft = Color(0xFFF0F7EB);
+  static const comparison = Color(0xFFF0F7EB);
+  static const background = Color(0xFFEEF3F1);
   static const surface = Colors.white;
-  static const text = Color(0xFF0D1733);
-  static const muted = Color(0xFF465775);
-  static const border = Color(0xFFD9E1F0);
-  static const success = Color(0xFF087C5A);
+  static const text = Color(0xFF132B2A);
+  static const muted = Color(0xFF6C807D);
+  static const border = Color(0xFFDDE8E1);
+  static const success = Color(0xFF2A7552);
   static const warning = Color(0xFFAD4C08);
   static const danger = Color(0xFFC12E44);
 }
@@ -50,7 +53,7 @@ ThemeData appTheme() => ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: AppColors.surface,
+    fillColor: AppColors.inputPanel,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
     labelStyle: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700),
     border: OutlineInputBorder(
@@ -68,8 +71,8 @@ ThemeData appTheme() => ThemeData(
   ),
   filledButtonTheme: FilledButtonThemeData(
     style: FilledButton.styleFrom(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: AppColors.accent,
+      foregroundColor: AppColors.onAccent,
       minimumSize: const Size(48, 52),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       textStyle: const TextStyle(

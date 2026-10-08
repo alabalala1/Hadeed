@@ -5,11 +5,18 @@ import '../theme/app_theme.dart';
 
 // Exact exports of Figma's clipped icon slots, including their root dimensions.
 class DesignIcon extends StatelessWidget {
-  const DesignIcon(this.node, {super.key});
+  const DesignIcon(this.node, {super.key, this.color});
   final String node;
+  final Color? color;
+  static const _primaryNodes = {'2:649', '2:1528', '2:529', '2:900',
+    '2:643', '2:1082', '2:661', '2:622', '2:1243', '2:574',
+    '2:970', '2:664', '2:1120', '2:1060', '2:646'};
   @override
-  Widget build(BuildContext context) =>
-      SvgPicture.asset('assets/icons/${node.replaceAll(':', '_')}.svg');
+  Widget build(BuildContext context) {
+    final tint = color ?? (_primaryNodes.contains(node) ? AppColors.primary : null);
+    return SvgPicture.asset('assets/icons/${node.replaceAll(':', '_')}.svg',
+      colorFilter: tint == null ? null : ColorFilter.mode(tint, BlendMode.srcIn));
+  }
 }
 
 class ScreenHeader extends StatelessWidget {
@@ -19,17 +26,20 @@ class ScreenHeader extends StatelessWidget {
     super.key,
     this.back = false,
     this.backNode = '2:1224',
+    this.trailing,
   });
   final String title, subtitle;
   final bool back;
   final String backNode;
+  final Widget? trailing;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
     child: Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppColors.navy, Color(0xFF203A6D)]),
+        color: AppColors.dark,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -59,11 +69,12 @@ class ScreenHeader extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFFCCD9F5), fontSize: 13),
+                style: const TextStyle(color: AppColors.onDarkMuted, fontSize: 13),
               ),
             ],
           ),
         ),
+        if (trailing != null) ...[const SizedBox(width: 12), trailing!],
       ],
     ),
     ),
@@ -87,7 +98,7 @@ class ActionButton extends StatelessWidget {
     final child = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (node != null) ...[DesignIcon(node!), const SizedBox(width: 8)],
+        if (node != null) ...[DesignIcon(node!, color: secondary ? AppColors.primary : AppColors.onAccent), const SizedBox(width: 8)],
         Flexible(child: Text(label, textAlign: TextAlign.center)),
       ],
     );

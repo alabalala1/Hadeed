@@ -7,6 +7,7 @@ import '../../app/exercise_controller.dart';
 import '../../app/training_controller.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/design_widgets.dart';
+import '../../core/widgets/exercise_media_viewer.dart';
 import '../../data/exercise_image_store.dart';
 import '../../domain/exercise.dart';
 import '../schedule/plan_editor_screen.dart';
@@ -250,6 +251,13 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                                             ],
                                           ),
                                         ),
+                                        if (e.imageFile != null)
+                                          IconButton(
+                                            key: ValueKey('library-media-${e.id}'),
+                                            tooltip: 'عرض الصورة المرفقة',
+                                            onPressed: () => showExerciseMedia(context, name: e.name, imageFile: e.imageFile!),
+                                            icon: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                                          ),
                                         if (!e.archived)
                                           TextButton(
                                             onPressed: training.busy

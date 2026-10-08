@@ -10,12 +10,14 @@ import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:hadeed/app/app.dart';
 import 'package:hadeed/app/workout_controller.dart';
+import 'package:hadeed/app/exercise_controller.dart';
 import 'package:hadeed/core/database/app_database.dart';
 import 'package:hadeed/data/backup_repository.dart';
 import 'package:hadeed/data/exercise_image_store.dart';
 import 'package:hadeed/data/exercise_repository.dart';
 import 'package:hadeed/data/training_repository.dart';
 import 'package:hadeed/data/workout_repository.dart';
+import 'package:hadeed/domain/exercise.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +63,14 @@ void main() {
         await repository.onboarding(useTemplate: true);
       });
       final images = ExerciseImageStore('${temp.path}/documents');
+      const mediaFile = 'exercise_images/media-test.png';
+      await tester.runAsync(() async {
+        final file = File(images.resolve(mediaFile));
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(base64Decode('iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAIAAABt+uBvAAAA9ElEQVR4nO3csQ2DAAwAwRBlAkZJhegZIVMyAgtkLCaATxNBcVe7sF6uPYzz+8Gx59UL3J1AQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaAgUBAoCBQECgIFgYJAQaDw+mVo3aZ/73GJz/LNGRcUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAY/O4454KCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgIFAQKAgUBAoCBYGCQEGgsANuyAS9qyIqYAAAAABJRU5ErkJggg=='));
+        final row = (await db.query('exercises', where: 'name=?', whereArgs: ['بنش صدر مستوي'])).single;
+        await ExerciseRepository(db).save(Exercise.fromRow({...row, 'image_file': mediaFile}));
+      });
       final boundary = GlobalKey();
       final app = HadeedApp(
         repository: ExerciseRepository(db),
@@ -94,7 +104,29 @@ void main() {
         await settle();
         expect(find.text('الحصة التدريبية اليوم'), findsOneWidget);
         expect(tester.takeException(), isNull);
+        expect(find.descendant(of: find.byKey(const ValueKey('today-header')), matching: find.byTooltip('الإعدادات')), findsOneWidget);
         await tester.runAsync(() => capture('today'));
+        await tester.tap(find.text('الجدول').last);
+        await settle();
+        await tester.runAsync(() => capture('schedule'));
+        await tester.tap(find.text('التمارين').last);
+        await settle();
+        await tester.runAsync(() => capture('exercise-library'));
+        final libraryMedia = find.byTooltip('عرض الصورة المرفقة');
+        await tester.ensureVisible(libraryMedia);
+        await tester.pump();
+        await tester.tap(libraryMedia);
+        await settle();
+        await settle();
+        expect(find.byKey(const ValueKey('exercise-media-viewer')), findsOneWidget);
+        expect(tester.widget<Image>(find.byKey(const ValueKey('exercise-media-image'))).image, isA<FileImage>());
+        expect(find.textContaining('تعذر عرض الصورة المرفقة'), findsNothing);
+        await tester.runAsync(() => capture('exercise-media'));
+        await tester.tap(find.byTooltip('إغلاق الصورة'));
+        await settle();
+        await settle();
+        await tester.tap(find.text('اليوم').last);
+        await settle();
         final start = find.text('بدء التمرين الآن');
         await tester.ensureVisible(start);
         await tester.tap(start);
@@ -115,6 +147,19 @@ void main() {
         await settle();
         tester.testTextInput.hide();
         await tester.pump();
+        final media = find.byKey(ValueKey('exercise-media-${state.active!.exercises.first['id']}'));
+        await tester.ensureVisible(media);
+        await tester.pump();
+        await tester.tap(media);
+        await settle();
+        await settle();
+        expect(find.byKey(const ValueKey('exercise-media-viewer')), findsOneWidget);
+        expect(find.textContaining('تعذر عرض الصورة المرفقة'), findsNothing);
+        await tester.tap(find.byTooltip('إغلاق الصورة'));
+        await settle();
+        await settle();
+        expect(tester.widget<TextFormField>(weight).controller!.text, '٧٫٥');
+        expect(tester.widget<TextFormField>(reps).controller!.text, '١٠');
         final heading = find.text('1. بنش صدر مستوي');
         await tester.ensureVisible(heading);
         await tester.pump();
@@ -154,6 +199,24 @@ void main() {
           final entryForm = find.byType(Form);
           expect(tester.getSize(entryForm).height, lessThan(700));
           if (i == 1) {
+            final library = Provider.of<ExerciseController>(tester.element(header), listen: false);
+            await tester.runAsync(() async {
+              final definition = (await library.repository.find(exercises[i]['exercise_id'] as String))!;
+              await library.change(() => library.repository.save(Exercise.fromRow({...definition.toRow(), 'image_file': mediaFile})));
+            });
+            await settle();
+            expect(exercises[i]['image_file'], isNull, reason: 'Adding an image must preserve the session snapshot');
+            final addedMedia = find.byKey(ValueKey('exercise-media-${exercises[i]['id']}'));
+            expect(addedMedia, findsOneWidget, reason: 'A new image must be accessible in an already active session');
+            await tester.ensureVisible(addedMedia);
+            await tester.pump();
+            await tester.tap(addedMedia);
+            await settle();
+            await settle();
+            expect(find.byKey(const ValueKey('exercise-media-viewer')), findsOneWidget);
+            await tester.tap(find.byTooltip('إغلاق الصورة'));
+            await settle();
+            await settle();
             await tester.ensureVisible(weight);
             await tester.enterText(weight, '12.5');
             await tester.ensureVisible(reps);

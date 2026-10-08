@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../app/training_controller.dart';
+import '../../app/exercise_controller.dart';
 import '../../app/workout_controller.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/design_widgets.dart';
+import '../../core/widgets/exercise_media_viewer.dart';
 import '../../data/exercise_image_store.dart';
 import '../../domain/training_plan.dart';
 import '../../domain/exercise.dart';
@@ -239,6 +241,11 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Widget _exerciseCard(BuildContext context, SessionRecord s, DbRow e, WorkoutController w) {
     final id = e['id'] as String;
+    final imageFile = e['image_file'] as String? ?? (s.active
+        ? context.watch<ExerciseController>().exercises
+            .where((definition) => definition.id == e['exercise_id'])
+            .firstOrNull?.imageFile
+        : null);
     final open = expandedExerciseId == id ||
         (expandedExerciseId == null && e['id'] == s.exercises.first['id']);
     final sets = s.sets[id]!;
@@ -285,6 +292,16 @@ class _SessionScreenState extends State<SessionScreen> {
         header,
         if (open) ...[
           const SizedBox(height: 10),
+          if (imageFile != null) ...[
+            OutlinedButton.icon(
+              key: ValueKey('exercise-media-$id'),
+              onPressed: () => showExerciseMedia(context,
+                name: e['name'] as String, imageFile: imageFile),
+              icon: const Icon(Icons.photo_library_outlined, size: 20),
+              label: const Text('عرض الصورة المرفقة'),
+            ),
+            const SizedBox(height: 10),
+          ],
           Text('الخطة المستهدفة: ${plans.length} جولات · ${plans.map((p) => PlannedSet.fromRow(Map<String, Object?>.from(p as Map)).describe(e['measurement_type'] == 'reps' ? MeasurementType.reps : MeasurementType.duration)).toSet().join(' / ')}${e['per_leg'] == 1 ? ' لكل رجل' : ''}${e['group_id'] == null ? '' : ' · سوبر سيت'}',
             style: const TextStyle(fontSize: 11, color: _sessionMuted)),
           const SizedBox(height: 10),

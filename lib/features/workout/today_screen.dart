@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../app/training_controller.dart';
 import '../../app/workout_controller.dart';
 import '../../core/widgets/design_widgets.dart';
+import '../../core/theme/app_theme.dart';
 import '../../domain/workout.dart';
 import 'session_screen.dart';
 import 'settings_screen.dart';
@@ -43,21 +44,18 @@ class TodayScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: ScreenHeader('الحصة التدريبية اليوم', localDate(date)),
-              ),
-              IconButton(
-                tooltip: 'الإعدادات',
-                onPressed: () => Navigator.push<void>(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                ),
-                icon: const Icon(Icons.more_vert),
-              ),
-            ],
-          ),
+          ScreenHeader('الحصة التدريبية اليوم', localDate(date),
+            key: const ValueKey('today-header'),
+            trailing: IconButton(
+              tooltip: 'الإعدادات',
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: .1),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+              onPressed: () => Navigator.push<void>(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
+              icon: const Icon(Icons.settings_outlined),
+            )),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -78,7 +76,7 @@ class TodayScreen extends StatelessWidget {
                   ),
                 if (w.active != null)
                   WorkoutCard(
-                    tint: const Color(0xFFFEF3C7),
+                    tint: AppColors.primarySoft,
                     child: Row(
                       children: [
                         const DesignIcon('2:526'),
