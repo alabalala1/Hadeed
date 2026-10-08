@@ -41,7 +41,9 @@ Future<void> showExerciseMedia(
                       key: const ValueKey('exercise-media-image'),
                       fit: BoxFit.contain,
                       semanticLabel: 'صورة تمرين $name',
-                      errorBuilder: (_, _, _) => const Center(
+                      errorBuilder: (_, error, _) {
+                        assert(() { debugPrint('Exercise media read failed: $error'); return true; }());
+                        return const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
                           child: Text(
@@ -49,7 +51,8 @@ Future<void> showExerciseMedia(
                             textAlign: TextAlign.center,
                           ),
                         ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
