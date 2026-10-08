@@ -175,11 +175,11 @@ void main() {
         await settle();
         expect(tester.widget<TextFormField>(weight).controller!.text, '٧٫٥');
         expect(tester.widget<TextFormField>(reps).controller!.text, '١٠');
-        final heading = find.text('1. بنش صدر مستوي');
+        final heading = find.byKey(ValueKey('exercise-header-${state.active!.exercises.first['id']}'));
         await tester.ensureVisible(heading);
         await tester.pump();
         await tester.tap(heading);
-        await tester.pump(const Duration(milliseconds: 400));
+        await settle();
         await tester.ensureVisible(heading);
         await tester.pump();
         await tester.tap(heading);
