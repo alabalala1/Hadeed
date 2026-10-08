@@ -111,6 +111,9 @@ void main() {
         await tester.runAsync(() => capture('schedule'));
         await tester.tap(find.text('التمارين').last);
         await settle();
+        await tester.enterText(find.byType(TextField), 'بنش صدر مستوي');
+        tester.testTextInput.hide();
+        await settle();
         await tester.runAsync(() => capture('exercise-library'));
         final libraryMedia = find.byTooltip('عرض الصورة المرفقة');
         await tester.ensureVisible(libraryMedia);
